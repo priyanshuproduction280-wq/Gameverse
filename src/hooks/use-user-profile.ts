@@ -21,6 +21,14 @@ export function useUserProfile(): UseUserProfileReturn {
 
   const { data: userDoc, isLoading: isDocLoading } = useDoc<UserProfile>(userDocRef);
 
+  const adminRoleRef = useMemoFirebase(() => {
+    if (!firestore || !authUser) return null;
+    return doc(firestore, 'roles_admin', authUser.uid);
+  }, [firestore, authUser]);
+
+  const { data: adminRoleDoc, isLoading: isAdminRoleLoading } = useDoc<{ isAdmin: boolean }>(adminRoleRef);
+
+
   const userProfile = useMemo(() => {
     if (!authUser) return null;
     
@@ -33,12 +41,12 @@ export function useUserProfile(): UseUserProfileReturn {
       photoURL: userDoc?.photoURL ?? authUser.photoURL,
       username: userDoc?.username,
       phoneNumber: userDoc?.phoneNumber,
-      isAdmin: userDoc?.isAdmin ?? false, // Default to false
+      isAdmin: !!adminRoleDoc, // Admin status is determined by the existence of the admin role doc
     };
-  }, [authUser, userDoc]);
+  }, [authUser, userDoc, adminRoleDoc]);
 
   return {
     userProfile,
-    isLoading: isAuthLoading || isDocLoading,
+    isLoading: isAuthLoading || isDocLoading || isAdminRoleLoading,
   };
 }
