@@ -40,17 +40,15 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               const Icon = ICONS[link.name];
               return (
                 <SidebarMenuItem key={link.href}>
-                  <Link href={link.href} legacyBehavior passHref>
-                    <SidebarMenuButton
-                      isActive={pathname.startsWith(link.href)}
-                      asChild
-                    >
-                      <a>
-                        {Icon && <Icon />}
-                        <span>{link.name}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </Link>
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith(link.href)}
+                    asChild
+                  >
+                    <Link href={link.href}>
+                      {Icon && <Icon />}
+                      <span>{link.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               );
             })}
