@@ -80,7 +80,7 @@ export default async function GameDetailPage({ params }: Props) {
           <aside className="md:col-span-1">
             <div className="sticky top-24 p-6 rounded-lg glassmorphism">
               <p className="text-4xl font-bold font-headline text-accent mb-4">
-                {game.price > 0 ? `$${game.price.toFixed(2)}` : 'Free'}
+                {game.price > 0 ? `₹${game.price.toFixed(2)}` : 'Free'}
               </p>
               <ul className="text-sm text-muted-foreground space-y-2 mb-6">
                 <li className="flex items-center"><strong className="w-28 font-medium text-foreground">Platform:</strong> {game.platform}</li>

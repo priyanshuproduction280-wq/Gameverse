@@ -53,7 +53,7 @@ export function GameCard({ game, className }: GameCardProps) {
             </p>
             <div className="mt-6 flex justify-between items-center">
               <p className="text-2xl font-bold font-headline text-accent">
-                {game.price > 0 ? `$${game.price.toFixed(2)}` : 'Free'}
+                {game.price > 0 ? `₹${game.price.toFixed(2)}` : 'Free'}
               </p>
               <Button
                 variant="outline"
