@@ -28,9 +28,19 @@ import {
   SelectValue,
 } from '../ui/select';
 
+const slugify = (text: string) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w-]+/g, '') // Remove all non-word chars
+    .replace(/--+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
+};
+
 const gameFormSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
-  slug: z.string().min(2, 'Slug must be at least 2 characters.'),
   platform: z.enum(['PC']),
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
   shortDescription: z.string().min(10, 'Short description is too short.').max(160, 'Short description is too long.'),
@@ -68,10 +78,13 @@ export function GameForm({ existingGame }: GameFormProps) {
       return;
     }
 
+    const slug = slugify(data.title);
+    const gameData = { ...data, slug };
+
     if (existingGame) {
       // Update existing game
       const gameDocRef = doc(firestore, 'games', existingGame.id);
-      updateDocumentNonBlocking(gameDocRef, data);
+      updateDocumentNonBlocking(gameDocRef, gameData);
       toast({
         title: 'Game Updated',
         description: `${data.title} has been successfully updated.`,
@@ -80,7 +93,7 @@ export function GameForm({ existingGame }: GameFormProps) {
     } else {
       // Add new game
       const gamesCollectionRef = collection(firestore, 'games');
-      addDocumentNonBlocking(gamesCollectionRef, data);
+      addDocumentNonBlocking(gamesCollectionRef, gameData);
       toast({
         title: 'Game Added',
         description: `${data.title} has been successfully added.`,
@@ -92,35 +105,19 @@ export function GameForm({ existingGame }: GameFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                    <Input placeholder="Cybernetic Horizons" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="slug"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Slug</FormLabel>
-                <FormControl>
-                    <Input placeholder="cybernetic-horizons" {...field} />
-                </FormControl>
-                 <FormDescription>URL-friendly identifier.</FormDescription>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-        </div>
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Cybernetic Horizons" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              <FormField
                 control={form.control}
