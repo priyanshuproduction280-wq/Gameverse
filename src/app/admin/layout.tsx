@@ -10,28 +10,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Only perform action once loading is complete.
-    if (!isLoading) {
-      // If there's no profile or the profile is not an admin, redirect.
-      if (!userProfile?.isAdmin) {
-        router.replace('/');
-      }
+    // If loading is complete AND we don't have an admin profile, redirect.
+    if (!isLoading && !userProfile?.isAdmin) {
+      router.replace('/');
     }
-  }, [userProfile, isLoading, router]);
+  }, [isLoading, userProfile, router]);
 
-  // If the user is a confirmed admin, show the layout.
-  if (!isLoading && userProfile?.isAdmin) {
-    return <AdminLayout>{children}</AdminLayout>;
+  // While loading, or if the user is not an admin (before redirect kicks in),
+  // show the loading spinner. This prevents a flash of the admin content.
+  if (isLoading || !userProfile?.isAdmin) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+          <p className="text-muted-foreground">Verifying admin access...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Otherwise, show a loading/verification screen.
-  // This screen will be shown while loading, and for non-admins before they are redirected.
-  return (
-    <div className="flex h-screen items-center justify-center bg-background text-foreground">
-      <div className="flex flex-col items-center gap-2">
-         <div className="w-8 h-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-        <p className="text-muted-foreground">Verifying admin access...</p>
-      </div>
-    </div>
-  );
+  // If loading is complete and the user is an admin, render the layout.
+  return <AdminLayout>{children}</AdminLayout>;
 }
