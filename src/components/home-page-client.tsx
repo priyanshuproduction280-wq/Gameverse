@@ -34,6 +34,7 @@ export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
     <div className="flex flex-col items-center">
       <section className="w-full py-24 md:py-32 lg:py-48 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(to_bottom,white_5%,transparent_80%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--accent)/0.15),transparent_60%)]"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background"></div>
         <div className="container z-10">
           <motion.div
@@ -45,7 +46,7 @@ export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
             <AnimatedText
               el="h1"
               text="Your Universe of Games"
-              className="text-5xl font-headline font-extrabold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400"
+              className="text-5xl font-headline font-extrabold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-br from-primary-foreground via-primary-foreground/80 to-accent"
             />
 
             <motion.p
