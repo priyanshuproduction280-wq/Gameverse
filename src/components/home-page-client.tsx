@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { GameCard } from '@/components/game-card';
 import { AnimatedText } from '@/components/animated-text';
 import type { Game } from '@/lib/types';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, limit, query } from 'firebase/firestore';
+import { Skeleton } from './ui/skeleton';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -22,7 +25,16 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
+export function HomePageClient() {
+  const firestore = useFirestore();
+
+  const featuredGamesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'games'), limit(3));
+  }, [firestore]);
+
+  const { data: featuredGames, isLoading } = useCollection<Game>(featuredGamesQuery);
+
   const handleBrowseClick = () => {
     const featuredGamesSection = document.getElementById('featured-games');
     if (featuredGamesSection) {
@@ -83,7 +95,14 @@ export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
           }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {featuredGames.map((game) => (
+          {isLoading && (
+            <>
+              <Skeleton className="h-[500px] w-full" />
+              <Skeleton className="h-[500px] w-full" />
+              <Skeleton className="h-[500px] w-full" />
+            </>
+          )}
+          {featuredGames?.map((game) => (
             <GameCard key={game.id} game={game} />
           ))}
         </motion.div>

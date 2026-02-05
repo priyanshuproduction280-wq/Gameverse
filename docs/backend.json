@@ -42,12 +42,199 @@
         "email",
         "displayName"
       ]
+    },
+    "Game": {
+      "title": "Game",
+      "description": "Represents a game in the GamerVerse store.",
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "description": "A URL-friendly slug for the game."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the game."
+        },
+        "platform": {
+          "type": "string",
+          "enum": [
+            "PC"
+          ],
+          "description": "The platform the game is for."
+        },
+        "shortDescription": {
+          "type": "string",
+          "description": "A short summary of the game."
+        },
+        "description": {
+          "type": "string",
+          "description": "A full description of the game."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the game in INR."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for the game's primary image."
+        },
+        "imageHint": {
+          "type": "string",
+          "description": "AI hint for the image."
+        },
+        "bannerUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for the game's banner image."
+        },
+        "bannerHint": {
+          "type": "string",
+          "description": "AI hint for the banner image."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags associated with the game."
+        }
+      },
+      "required": [
+        "slug",
+        "title",
+        "platform",
+        "shortDescription",
+        "description",
+        "price",
+        "imageUrl"
+      ]
+    },
+    "Cart": {
+      "title": "Shopping Cart",
+      "description": "Represents a user's shopping cart. This is a subcollection under a user.",
+      "type": "object",
+      "properties": {
+        "gameId": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "imageUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "gameId",
+        "quantity",
+        "title",
+        "price"
+      ]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Represents a user's order.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "userEmail": {
+          "type": "string",
+          "format": "email"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "gameId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "price": {
+                "type": "number"
+              },
+              "quantity": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "gameId",
+              "title",
+              "price",
+              "quantity"
+            ]
+          }
+        },
+        "totalAmount": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending",
+            "Delivered"
+          ]
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "userId",
+        "userEmail",
+        "items",
+        "totalAmount",
+        "status",
+        "createdAt"
+      ]
+    },
+    "AdminRole": {
+      "title": "Admin Role",
+      "description": "A document indicating a user has admin privileges. The existence of the document grants the role.",
+      "type": "object",
+      "properties": {
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Should always be true."
+        }
+      },
+      "required": [
+        "isAdmin"
+      ]
+    },
+    "PaymentQR": {
+      "title": "Payment QR Code",
+      "description": "Stores the configuration for the current payment QR code.",
+      "type": "object",
+      "properties": {
+        "qrCodeUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the QR code image for payments."
+        }
+      },
+      "required": [
+        "qrCodeUrl"
+      ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {

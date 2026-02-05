@@ -1,40 +1,56 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { getGameBySlug, getGames } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Zap } from 'lucide-react';
-import type { Metadata } from 'next';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit } from 'firebase/firestore';
+import type { Game } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect } from 'react';
 
-type Props = {
-  params: { slug: string };
-};
+export default function GameDetailPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const firestore = useFirestore();
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const game = await getGameBySlug(params.slug);
+  const gameQuery = useMemoFirebase(() => {
+    if (!firestore || !slug) return null;
+    return query(collection(firestore, 'games'), where('slug', '==', slug), limit(1));
+  }, [firestore, slug]);
 
-  if (!game) {
-    return {
-      title: 'Game Not Found',
-    };
+  const { data: games, isLoading } = useCollection<Game>(gameQuery);
+  const game = games?.[0];
+
+  useEffect(() => {
+    if (game?.title) {
+      document.title = `${game.title} | GamerVerse`;
+    }
+  }, [game]);
+
+  if (isLoading) {
+    return (
+      <article>
+        <header className="relative h-[40vh] md:h-[60vh] w-full">
+          <Skeleton className="h-full w-full" />
+        </header>
+        <div className="container py-12">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            <div className="md:col-span-2 space-y-4">
+              <Skeleton className="h-8 w-1/4" />
+              <Skeleton className="h-48 w-full" />
+            </div>
+            <div className="md:col-span-1">
+              <Skeleton className="h-64 w-full" />
+            </div>
+          </div>
+        </div>
+      </article>
+    );
   }
-
-  return {
-    title: game.title,
-    description: game.shortDescription,
-  };
-}
-
-export async function generateStaticParams() {
-  const games = await getGames();
-  return games.map((game) => ({
-    slug: game.slug,
-  }));
-}
-
-export default async function GameDetailPage({ params }: Props) {
-  const game = await getGameBySlug(params.slug);
 
   if (!game) {
     notFound();
