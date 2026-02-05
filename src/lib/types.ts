@@ -41,7 +41,6 @@ export type UserProfile = {
   username?: string | null;
   phoneNumber?: string | null;
   photoURL: string | null;
-  isAdmin?: boolean;
 };
 
 export type PaymentConfig = {

@@ -5,8 +5,13 @@ import { UserProfile } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { useMemo } from 'react';
 
+// The AppUserProfile combines the Firestore document with live auth state
+export type AppUserProfile = UserProfile & {
+  isAdmin: boolean;
+};
+
 type UseUserProfileReturn = {
-  userProfile: UserProfile | null;
+  userProfile: AppUserProfile | null;
   isLoading: boolean;
 };
 
@@ -19,21 +24,23 @@ export function useUserProfile(): UseUserProfileReturn {
     return doc(firestore, 'users', authUser.uid);
   }, [firestore, authUser]);
 
+  // We fetch the base profile from Firestore. This type no longer has `isAdmin`.
   const { data: userDoc, isLoading: isDocLoading } = useDoc<UserProfile>(userDocRef);
 
   const adminRoleRef = useMemoFirebase(() => {
     if (!firestore || !authUser) return null;
+    // This is the source of truth for admin status.
     return doc(firestore, 'roles_admin', authUser.uid);
   }, [firestore, authUser]);
 
+  // We fetch the admin role document. Its existence grants admin rights.
   const { data: adminRoleDoc, isLoading: isAdminRoleLoading } = useDoc<{ isAdmin: boolean }>(adminRoleRef);
 
 
-  const userProfile = useMemo(() => {
+  const userProfile = useMemo((): AppUserProfile | null => {
     if (!authUser) return null;
     
-    // The user document from Firestore is the source of truth for profile data
-    // but we can fall back to the auth user's data if the doc is loading or doesn't exist.
+    // The final user profile object is composed here.
     return {
       uid: authUser.uid,
       email: userDoc?.email ?? authUser.email,
@@ -41,7 +48,8 @@ export function useUserProfile(): UseUserProfileReturn {
       photoURL: userDoc?.photoURL ?? authUser.photoURL,
       username: userDoc?.username,
       phoneNumber: userDoc?.phoneNumber,
-      isAdmin: !!adminRoleDoc, // Admin status is determined by the existence of the admin role doc
+      // `isAdmin` is now determined ONLY by the existence of the admin role doc.
+      isAdmin: !!adminRoleDoc, 
     };
   }, [authUser, userDoc, adminRoleDoc]);
 

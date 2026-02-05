@@ -23,9 +23,6 @@ export async function ensureUserProfileDocument(user: User) {
     email: user.email,
     displayName: user.displayName,
     photoURL: user.photoURL,
-    // New users are not admins by default.
-    // The isAdmin flag would be set through a separate admin process.
-    isAdmin: false 
   };
 
   // Use setDoc with merge: true to create or update the document
