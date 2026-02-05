@@ -1,0 +1,152 @@
+/**
+ * @file firestore.rules
+ * @description Security rules for the GamerVerse application.
+ *
+ * @section Core Philosophy
+ * This ruleset enforces a strict user-ownership model combined with a global admin role.
+ * User-specific data is private to the user, while global data like game listings
+ * is publicly readable but managed exclusively by administrators.
+ *
+ * @section Data Structure
+ * - /users/{userId}: Contains user profile documents.
+ * - /users/{userId}/carts: Subcollection for a user's shopping cart.
+ * - /users/{userId}/orders: Subcollection for a user's past orders.
+ * - /games/{gameId}: Publicly readable collection of games.
+ * - /roles_admin/{userId}: A lookup collection where the existence of a document signifies admin status.
+ * - /payment_qr/current: A single document storing the current payment QR code.
+ *
+ * @section Key Security Decisions
+ * - User data is strictly segregated under /users/{userId} and accessible only by the owning user, enforcing path-based security.
+ * - Admin privileges are granted based on the existence of a document in the `/roles_admin` collection, not a mutable field on the user profile. This is a secure, lookup-based approach.
+ * - Client-side user enumeration is disallowed by restricting `list` access on the top-level `/users` collection.
+ * - The `/roles_admin` collection is not writable by any client to prevent users from promoting themselves to admin.
+ *
+ * @section Denormalization for Authorization
+ * The path structure itself serves as the primary denormalization strategy. By nesting user-specific
+ * data under `/users/{userId}`, we can write fast and simple rules like `isOwner(userId)` without
+ * needing any extra `get()` calls. The `/roles_admin/{userId}` collection is a classic and performant
+ * pattern for role-based lookups.
+ *
+ * @section Structural Segregation
+ * This ruleset uses separate top-level collections for different access patterns.
+ * Public data (`/games`) is separate from private user data (`/users`), which makes
+ * public list queries secure and performant.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for concise and reusable logic
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Checks for ownership on an existing document. Used for update/delete.
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    // Checks if the user has a corresponding document in the roles_admin collection.
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    // Ensures the document's internal ID matches the path ID on creation.
+    function documentIdMatchesPath(userId) {
+      return request.resource.data.id == userId;
+    }
+    
+    // Ensures a specific field cannot be changed during an update.
+    function isImmutable(field) {
+      return request.resource.data[field] == resource.data[field];
+    }
+
+    /**
+     * @description Manages user profile documents.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own profile document.
+     * @deny (list) Any user attempting to list all user profiles.
+     * @principle A user can create and manage their own profile, but cannot see other users' profiles.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && documentIdMatchesPath(userId);
+      allow update: if isExistingOwner(userId) && isImmutable('id');
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages items in a user's shopping cart.
+     * @path /users/{userId}/carts/{cartId}
+     * @allow (create, list) An authenticated user managing items in their own cart.
+     * @deny (get) An authenticated user trying to access another user's cart.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /users/{userId}/carts/{cartId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update, delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages a user's order history.
+     * @path /users/{userId}/orders/{orderId}
+     * @allow (get) The owning user or an admin reading an order.
+     * @deny (update) An admin attempting to modify a user's order.
+     * @principle User can manage their own data; admins have read-only audit access.
+     */
+    match /users/{userId}/orders/{orderId} {
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages publicly available game information.
+     * @path /games/{gameId}
+     * @allow (list) Any user, signed in or not, listing all games.
+     * @deny (create) A non-admin user trying to add a new game.
+     * @principle Data is public-read, but write access is restricted to administrators.
+     */
+    match /games/{gameId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && resource != null;
+    }
+
+    /**
+     * @description A lookup collection to determine admin status.
+     * @path /roles_admin/{userId}
+     * @allow (get) The `isAdmin()` function checking for the existence of a role document.
+     * @deny (create, list) Any client trying to list all admins or grant themselves admin rights.
+     * @principle This data is managed server-side and is read-only for clients to prevent privilege escalation.
+     */
+    match /roles_admin/{userId} {
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Stores the current payment QR code.
+     * @path /payment_qr/current
+     * @allow (get) Any user, signed in or not, viewing the QR code.
+     * @deny (update) A non-admin user trying to change the QR code.
+     * @principle A single, global configuration document that is public-read and admin-write.
+     */
+    match /payment_qr/current {
+      allow get: if true;
+      allow list: if false; // Not a collection, but deny explicitly for safety.
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin() && resource != null;
+    }
+  }
+}

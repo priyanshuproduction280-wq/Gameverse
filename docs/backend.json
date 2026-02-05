@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the GamerVerse platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User's display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Indicates if the user has admin privileges."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "displayName"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. User ID is the Firebase Auth UID. Includes denormalized 'userId' in the document for simpler security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/games/{gameId}",
+        "definition": {
+          "entityName": "Game",
+          "schema": {
+            "$ref": "#/backend/entities/Game"
+          },
+          "description": "Stores game information. Publicly readable, but only writable by admins.",
+          "params": [
+            {
+              "name": "gameId",
+              "description": "The unique ID of the game."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/carts/{cartId}",
+        "definition": {
+          "entityName": "Cart",
+          "schema": {
+            "$ref": "#/backend/entities/Cart"
+          },
+          "description": "Stores user's cart information. Accessible only by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            },
+            {
+              "name": "cartId",
+              "description": "The unique ID of the cart."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores order information for each user. Accessible only by the user and admins.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique ID of the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "AdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/AdminRole"
+          },
+          "description": "Indicates if a user has admin privileges. Existence of a document grants admin access.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/payment_qr/current",
+        "definition": {
+          "entityName": "PaymentQR",
+          "schema": {
+            "$ref": "#/backend/entities/PaymentQR"
+          },
+          "description": "Stores the current payment QR code.  Writable only by admins. Single document collection."
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to support GamerVerse's core features: game listings, user authentication, cart management, checkout, and admin panel. It prioritizes security, scalability, and debuggability by adhering to the principles of Authorization Independence, Structural Segregation, and Access Modeling.\n\n*   **Authorization Independence:**  The structure uses path-based ownership for user-specific data (carts, orders), eliminating the need for `get()` calls in security rules.  Admin status is checked via the existence of a document in `/roles_admin/{uid}`. \n*   **Structural Segregation:**  Games are stored in a top-level `/games` collection, which allows for public read access while keeping user-specific data separate in `/users/{userId}` subcollections. The admin role uses a separate collection `/roles_admin`.\n*   **Access Modeling:** Path-based ownership is used for user-owned data (`/users/{userId}/carts/{cartId}`, `/users/{userId}/orders/{orderId}`).  The `games` collection is globally readable but only writable by admins.  The `/roles_admin` collection gates admin functionality.\n*   **QAPs (Rules are not Filters):** Public read access to `/games` is granted via rules without requiring filtering.  Admin access is determined by the presence of a document in `/roles_admin/{uid}`.  User data is secured by path-based ownership.\n\nThis design avoids hierarchical authorization dependencies and ensures clarity of intent, making security rules simple, robust, and easy to debug. It supports atomic operations and maintains data integrity."
+  }
+}
