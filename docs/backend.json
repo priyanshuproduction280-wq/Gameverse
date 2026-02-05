@@ -31,10 +31,6 @@
           "type": "string",
           "description": "URL of the user's profile picture.",
           "format": "uri"
-        },
-        "isAdmin": {
-          "type": "boolean",
-          "description": "Indicates if the user has admin privileges."
         }
       },
       "required": [
