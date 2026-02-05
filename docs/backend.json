@@ -19,6 +19,14 @@
           "type": "string",
           "description": "User's display name."
         },
+        "username": {
+          "type": "string",
+          "description": "User's unique username."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "User's phone number."
+        },
         "photoURL": {
           "type": "string",
           "description": "URL of the user's profile picture.",

@@ -31,6 +31,8 @@ export function useUserProfile(): UseUserProfileReturn {
       email: userDoc?.email ?? authUser.email,
       displayName: userDoc?.displayName ?? authUser.displayName,
       photoURL: userDoc?.photoURL ?? authUser.photoURL,
+      username: userDoc?.username,
+      phoneNumber: userDoc?.phoneNumber,
       isAdmin: userDoc?.isAdmin ?? false, // Default to false
     };
   }, [authUser, userDoc]);
