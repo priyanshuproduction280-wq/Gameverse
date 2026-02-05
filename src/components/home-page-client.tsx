@@ -33,9 +33,9 @@ export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
   return (
     <div className="flex flex-col items-center">
       <section className="w-full py-24 md:py-32 lg:py-48 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(to_bottom,white_5%,transparent_80%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--accent)/0.15),transparent_60%)]"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background"></div>
+        <div className="absolute inset-0 pointer-events-none bg-grid-white/[0.05] [mask-image:linear-gradient(to_bottom,white_5%,transparent_80%)]"></div>
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,hsl(var(--accent)/0.15),transparent_60%)]"></div>
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-background"></div>
         <div className="container z-10">
           <motion.div
             initial="hidden"
