@@ -23,6 +23,13 @@ const itemVariants = {
 };
 
 export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
+  const handleBrowseClick = () => {
+    const featuredGamesSection = document.getElementById('featured-games');
+    if (featuredGamesSection) {
+      featuredGamesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="flex flex-col items-center">
       <section className="w-full py-24 md:py-32 lg:py-48 text-center relative overflow-hidden">
@@ -51,8 +58,8 @@ export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
               variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4"
             >
-              <Button asChild size="lg" className="font-bold">
-                <Link href="/games">Browse Games</Link>
+              <Button size="lg" className="font-bold" onClick={handleBrowseClick}>
+                Browse Games
               </Button>
               <Button asChild size="lg" variant="secondary" className="font-bold">
                 <Link href="/login">Login to Buy</Link>
@@ -62,7 +69,7 @@ export function HomePageClient({ featuredGames }: { featuredGames: Game[] }) {
         </div>
       </section>
 
-      <section className="container py-16">
+      <section id="featured-games" className="container py-16">
         <h2 className="text-4xl font-headline font-bold text-center mb-12">
           Featured Games
         </h2>
