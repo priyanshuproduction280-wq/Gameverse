@@ -21,8 +21,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, deleteDoc, doc, query } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query } from 'firebase/firestore';
 import type { Game } from '@/lib/types';
 import { Badge } from '../ui/badge';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
@@ -47,21 +47,21 @@ export function GamesTable() {
 
   const { data: games, isLoading } = useCollection<Game>(gamesQuery);
 
-  const handleDelete = async (gameId: string) => {
-    if (!firestore) return;
-    try {
-      await deleteDoc(doc(firestore, 'games', gameId));
-      toast({
+  const handleDelete = (gameId: string) => {
+    if (!firestore) {
+        toast({
+            variant: 'destructive',
+            title: 'Error deleting game',
+            description: 'Firestore is not available.',
+        });
+        return;
+    }
+    const gameDocRef = doc(firestore, 'games', gameId);
+    deleteDocumentNonBlocking(gameDocRef);
+    toast({
         title: 'Game deleted',
         description: 'The game has been successfully deleted.',
-      });
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error deleting game',
-        description: error.message || 'An unexpected error occurred.',
-      });
-    }
+    });
   };
 
   return (

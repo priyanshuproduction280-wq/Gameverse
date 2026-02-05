@@ -62,39 +62,30 @@ export function GameForm({ existingGame }: GameFormProps) {
     defaultValues,
   });
 
-  const onSubmit = async (data: GameFormValues) => {
+  const onSubmit = (data: GameFormValues) => {
     if (!firestore) {
       toast({ variant: 'destructive', title: 'Firestore not available' });
       return;
     }
 
-    try {
-      if (existingGame) {
-        // Update existing game
-        const gameDocRef = doc(firestore, 'games', existingGame.id);
-        await updateDocumentNonBlocking(gameDocRef, data);
-        toast({
-          title: 'Game Updated',
-          description: `${data.title} has been successfully updated.`,
-        });
-        router.push('/admin/games');
-      } else {
-        // Add new game
-        const gamesCollectionRef = collection(firestore, 'games');
-        await addDocumentNonBlocking(gamesCollectionRef, data);
-        toast({
-          title: 'Game Added',
-          description: `${data.title} has been successfully added.`,
-        });
-        router.push('/admin/games');
-      }
-    } catch (error: any) {
-      console.error('Game form error:', error);
+    if (existingGame) {
+      // Update existing game
+      const gameDocRef = doc(firestore, 'games', existingGame.id);
+      updateDocumentNonBlocking(gameDocRef, data);
       toast({
-        variant: 'destructive',
-        title: 'Operation failed',
-        description: error.message || 'An error occurred.',
+        title: 'Game Updated',
+        description: `${data.title} has been successfully updated.`,
       });
+      router.push('/admin/games');
+    } else {
+      // Add new game
+      const gamesCollectionRef = collection(firestore, 'games');
+      addDocumentNonBlocking(gamesCollectionRef, data);
+      toast({
+        title: 'Game Added',
+        description: `${data.title} has been successfully added.`,
+      });
+      router.push('/admin/games');
     }
   };
 
