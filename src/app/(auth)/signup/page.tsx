@@ -5,18 +5,84 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth, useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { ensureUserProfileDocument } from '@/lib/user';
 
 export default function SignupPage() {
-  const handleGoogleSignUp = () => {
-    // Firebase Google Sign-up logic here
-    console.log('Signing up with Google...');
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleGoogleSignUp = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await ensureUserProfileDocument(result.user);
+      router.push('/');
+      toast({
+        title: 'Account created!',
+        description: "You're now signed in.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: error.message || 'Could not sign up with Google.',
+      });
+    }
   };
-  
-  const handleEmailSignUp = (e: React.FormEvent) => {
+
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Firebase Email/Password Sign-up logic here
-    console.log('Signing up with email...');
+    if (password !== confirmPassword) {
+      toast({
+        variant: 'destructive',
+        title: 'Passwords do not match.',
+        description: 'Please check your passwords and try again.',
+      });
+      return;
+    }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // We can extract a display name from the email
+      const displayName = email.split('@')[0];
+      await updateProfile(userCredential.user, { displayName });
+      
+      // We need to pass the updated user object to create the profile
+      await ensureUserProfileDocument({ ...userCredential.user, displayName });
+
+      router.push('/');
+      toast({
+        title: 'Account created!',
+        description: "You're now signed in.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: error.message || 'Could not create account.',
+      });
+    }
   };
+
+  if (isUserLoading || (!isUserLoading && user)) {
+     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  }
 
   return (
     <Card className="w-full max-w-md glassmorphism">
@@ -28,15 +94,15 @@ export default function SignupPage() {
         <form onSubmit={handleEmailSignUp} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" required />
+            <Input id="email" type="email" placeholder="you@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" required />
+            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
            <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirm Password</Label>
-            <Input id="confirm-password" type="password" required />
+            <Input id="confirm-password" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full font-bold">Create Account</Button>
         </form>

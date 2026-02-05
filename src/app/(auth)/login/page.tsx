@@ -5,18 +5,67 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth, useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { ensureUserProfileDocument } from '@/lib/user';
 
 export default function LoginPage() {
-  const handleGoogleSignIn = () => {
-    // Firebase Google Sign-in logic here
-    console.log('Signing in with Google...');
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await ensureUserProfileDocument(result.user);
+      router.push('/');
+      toast({
+        title: 'Signed in!',
+        description: 'Welcome back.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: error.message || 'Could not sign in with Google.',
+      });
+    }
   };
-  
-  const handleEmailSignIn = (e: React.FormEvent) => {
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Firebase Email/Password Sign-in logic here
-    console.log('Signing in with email...');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/');
+       toast({
+        title: 'Signed in!',
+        description: 'Welcome back.',
+      });
+    } catch (error: any) {
+       toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: error.message || 'Could not sign in.',
+      });
+    }
   };
+
+  if (isUserLoading || (!isUserLoading && user)) {
+     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  }
 
   return (
     <Card className="w-full max-w-md glassmorphism">
@@ -28,11 +77,11 @@ export default function LoginPage() {
         <form onSubmit={handleEmailSignIn} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" required />
+            <Input id="email" type="email" placeholder="you@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" required />
+            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full font-bold">Sign In</Button>
         </form>

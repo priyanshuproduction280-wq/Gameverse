@@ -13,29 +13,30 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CreditCard, LogOut, Settings, User } from 'lucide-react';
-import type { UserProfile } from '@/lib/types';
-
-// This is a mock implementation. Replace with actual auth state.
-const useAuth = (): { user: UserProfile | null; signOut: () => void } => {
-  const user: UserProfile | null = null; // Set to a user object to see the logged-in state
-  // const user: UserProfile | null = {
-  //   uid: '123',
-  //   email: 'user@gamerverse.com',
-  //   displayName: 'John Doe',
-  //   photoURL: 'https://picsum.photos/seed/user/40/40',
-  //   isAdmin: true
-  // };
-
-  const signOut = () => {
-    console.log('Signing out...');
-  };
-  return { user, signOut };
-};
+import { useAuth } from '@/firebase';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { useToast } from '@/hooks/use-toast';
 
 export function UserNav() {
-  const { user, signOut } = useAuth();
+  const auth = useAuth();
+  const { userProfile, isLoading } = useUserProfile();
+  const { toast } = useToast();
 
-  if (!user) {
+
+  const signOut = () => {
+    auth.signOut();
+    toast({
+      title: 'Signed out',
+      description: 'You have been successfully signed out.',
+    });
+  };
+
+  if (isLoading) {
+    // You can render a skeleton or a loading spinner here
+    return <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />;
+  }
+
+  if (!userProfile) {
     return (
       <Button asChild>
         <Link href="/login">Login</Link>
@@ -48,9 +49,9 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+            <AvatarImage src={userProfile.photoURL ?? ''} alt={userProfile.displayName ?? 'User'} />
             <AvatarFallback>
-              {user.displayName?.charAt(0).toUpperCase() ?? user.email?.charAt(0).toUpperCase() ?? 'U'}
+              {userProfile.displayName?.charAt(0).toUpperCase() ?? userProfile.email?.charAt(0).toUpperCase() ?? 'U'}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -58,8 +59,8 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            <p className="text-sm font-medium leading-none">{userProfile.displayName}</p>
+            <p className="text-xs leading-none text-muted-foreground">{userProfile.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -76,7 +77,7 @@ export function UserNav() {
               <span>My Orders</span>
             </DropdownMenuItem>
           </Link>
-          {user.isAdmin && (
+          {userProfile.isAdmin && (
             <Link href="/admin">
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />

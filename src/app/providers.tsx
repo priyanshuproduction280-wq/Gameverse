@@ -2,14 +2,13 @@
 
 import type { ReactNode } from 'react';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase';
 
 export function Providers({ children }: { children: ReactNode }) {
-  // In a real app, these would be your actual AuthProvider, CartProvider, etc.
-  // For this scaffold, we just pass children through.
   return (
-    <>
+    <FirebaseClientProvider>
       {children}
       <Toaster />
-    </>
+    </FirebaseClientProvider>
   );
 }

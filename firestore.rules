@@ -55,9 +55,9 @@ service cloud.firestore {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    // Ensures the document's internal ID matches the path ID on creation.
+    // Ensures the document's internal UID matches the path ID on creation.
     function documentIdMatchesPath(userId) {
-      return request.resource.data.id == userId;
+      return request.resource.data.uid == userId;
     }
     
     // Ensures a specific field cannot be changed during an update.
@@ -76,7 +76,7 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if false;
       allow create: if isOwner(userId) && documentIdMatchesPath(userId);
-      allow update: if isExistingOwner(userId) && isImmutable('id');
+      allow update: if isExistingOwner(userId) && isImmutable('uid');
       allow delete: if isExistingOwner(userId);
     }
 
