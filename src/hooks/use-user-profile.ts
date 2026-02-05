@@ -5,10 +5,9 @@ import { UserProfile } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { useMemo } from 'react';
 
-// The AppUserProfile combines the Firestore document with live auth state
-export type AppUserProfile = UserProfile & {
-  isAdmin: boolean;
-};
+// The AppUserProfile combines the Firestore document with live auth state.
+// It is the single source of truth for the user's profile in the app.
+export type AppUserProfile = UserProfile;
 
 type UseUserProfileReturn = {
   userProfile: AppUserProfile | null;
@@ -24,37 +23,30 @@ export function useUserProfile(): UseUserProfileReturn {
     return doc(firestore, 'users', authUser.uid);
   }, [firestore, authUser]);
 
-  // We fetch the base profile from Firestore. This type no longer has `isAdmin`.
+  // Fetch the entire user profile from Firestore, which now includes the 'isAdmin' flag.
   const { data: userDoc, isLoading: isDocLoading } = useDoc<UserProfile>(userDocRef);
-
-  const adminRoleRef = useMemoFirebase(() => {
-    if (!firestore || !authUser) return null;
-    // This is the source of truth for admin status.
-    return doc(firestore, 'roles_admin', authUser.uid);
-  }, [firestore, authUser]);
-
-  // We fetch the admin role document. Its existence grants admin rights.
-  const { data: adminRoleDoc, isLoading: isAdminRoleLoading } = useDoc<{ isAdmin: boolean }>(adminRoleRef);
-
 
   const userProfile = useMemo((): AppUserProfile | null => {
     if (!authUser) return null;
-    
+
     // The final user profile object is composed here.
     return {
       uid: authUser.uid,
+      // We prioritize data from the Firestore document, falling back to the auth object.
       email: userDoc?.email ?? authUser.email,
       displayName: userDoc?.displayName ?? authUser.displayName,
       photoURL: userDoc?.photoURL ?? authUser.photoURL,
       username: userDoc?.username,
       phoneNumber: userDoc?.phoneNumber,
-      // `isAdmin` is now determined ONLY by the existence of the admin role doc.
-      isAdmin: !!adminRoleDoc, 
+      // `isAdmin` is now sourced directly from the user document.
+      // The `?? false` ensures that if the field is missing, the user is not an admin.
+      isAdmin: userDoc?.isAdmin ?? false,
     };
-  }, [authUser, userDoc, adminRoleDoc]);
+  }, [authUser, userDoc]);
 
   return {
     userProfile,
-    isLoading: isAuthLoading || isDocLoading || isAdminRoleLoading,
+    // Loading is complete once both auth state and the Firestore document are loaded.
+    isLoading: isAuthLoading || isDocLoading,
   };
 }

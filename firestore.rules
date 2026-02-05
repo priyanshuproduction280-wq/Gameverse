@@ -8,29 +8,23 @@
  * is publicly readable but managed exclusively by administrators.
  *
  * @section Data Structure
- * - /users/{userId}: Contains user profile documents.
+ * - /users/{userId}: Contains user profile documents, with an `isAdmin` flag for authorization.
  * - /users/{userId}/carts: Subcollection for a user's shopping cart.
  * - /users/{userId}/orders: Subcollection for a user's past orders.
  * - /games/{gameId}: Publicly readable collection of games.
- * - /roles_admin/{userId}: A lookup collection where the existence of a document signifies admin status.
  * - /payment_qr/current: A single document storing the current payment QR code.
  *
  * @section Key Security Decisions
- * - User data is strictly segregated under /users/{userId} and accessible only by the owning user, enforcing path-based security.
- * - Admin privileges are granted based on the existence of a document in the `/roles_admin` collection, not a mutable field on the user profile. This is a secure, lookup-based approach.
+ * - User data is strictly segregated under /users/{userId} and accessible only by the owning user.
+ * - Admin privileges are granted based on an `isAdmin` boolean field on the user's document.
+ * - The `isAdmin` field is immutable for clients, meaning users cannot grant themselves admin rights.
+ *   This must be done server-side or through the Firebase Console.
  * - Client-side user enumeration is disallowed by restricting `list` access on the top-level `/users` collection.
- * - The `/roles_admin` collection is not writable by any client to prevent users from promoting themselves to admin.
  *
  * @section Denormalization for Authorization
- * The path structure itself serves as the primary denormalization strategy. By nesting user-specific
- * data under `/users/{userId}`, we can write fast and simple rules like `isOwner(userId)` without
- * needing any extra `get()` calls. The `/roles_admin/{userId}` collection is a classic and performant
- * pattern for role-based lookups.
- *
- * @section Structural Segregation
- * This ruleset uses separate top-level collections for different access patterns.
- * Public data (`/games`) is separate from private user data (`/users`), which makes
- * public list queries secure and performant.
+ * The `isAdmin` flag is a classic denormalization pattern. Instead of a separate roles collection,
+ * we place the flag directly on the user object. This requires only one document read (`get()`)
+ * to check for admin status anywhere in the rules, which is highly performant.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -50,9 +44,9 @@ service cloud.firestore {
       return isOwner(userId) && resource != null;
     }
 
-    // Checks if the user has a corresponding document in the roles_admin collection.
+    // Checks the `isAdmin` flag on the user's own profile document.
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // Ensures the document's internal UID matches the path ID on creation.
@@ -68,15 +62,15 @@ service cloud.firestore {
     /**
      * @description Manages user profile documents.
      * @path /users/{userId}
-     * @allow (create) An authenticated user creating their own profile document.
+     * @allow (create) An authenticated user creating their own profile, ensuring they are not an admin.
      * @deny (list) Any user attempting to list all user profiles.
-     * @principle A user can create and manage their own profile, but cannot see other users' profiles.
+     * @principle A user can manage their own profile, but cannot elevate their privileges.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && documentIdMatchesPath(userId);
-      allow update: if isExistingOwner(userId) && isImmutable('uid');
+      allow create: if isOwner(userId) && documentIdMatchesPath(userId) && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false);
+      allow update: if isExistingOwner(userId) && isImmutable('uid') && isImmutable('isAdmin');
       allow delete: if isExistingOwner(userId);
     }
 
@@ -118,21 +112,6 @@ service cloud.firestore {
       allow get, list: if true;
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && resource != null;
-    }
-
-    /**
-     * @description A lookup collection to determine admin status.
-     * @path /roles_admin/{userId}
-     * @allow (get) The `isAdmin()` function checking for the existence of a role document.
-     * @deny (create, list) Any client trying to list all admins or grant themselves admin rights.
-     * @principle This data is managed server-side and is read-only for clients to prevent privilege escalation.
-     */
-    match /roles_admin/{userId} {
-      allow get: if isSignedIn();
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
     }
 
     /**

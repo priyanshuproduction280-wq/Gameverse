@@ -31,6 +31,10 @@
           "type": "string",
           "description": "URL of the user's profile picture.",
           "format": "uri"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Grants administrator privileges."
         }
       },
       "required": [
@@ -196,20 +200,6 @@
         "createdAt"
       ]
     },
-    "AdminRole": {
-      "title": "Admin Role",
-      "description": "A document indicating a user has admin privileges. The existence of the document grants the role.",
-      "type": "object",
-      "properties": {
-        "isAdmin": {
-          "type": "boolean",
-          "description": "Should always be true."
-        }
-      },
-      "required": [
-        "isAdmin"
-      ]
-    },
     "PaymentQR": {
       "title": "Payment QR Code",
       "description": "Stores the configuration for the current payment QR code.",
@@ -257,12 +247,6 @@
         "$ref": "#/entities/Order"
       },
       "description": "Stores order information for each user. Accessible only by the user and admins."
-    },
-    "/roles_admin/{userId}": {
-      "schema": {
-        "$ref": "#/entities/AdminRole"
-      },
-      "description": "Indicates if a user has admin privileges. Existence of a document grants admin access."
     },
     "/payment_qr/current": {
       "schema": {
