@@ -73,13 +73,36 @@ export function GameForm({ existingGame }: GameFormProps) {
   const router = useRouter();
 
   const defaultValues: Partial<GameFormValues> = existingGame
-    ? { 
-        ...existingGame, 
+    ? {
+        ...existingGame,
         tags: existingGame.tags?.join(', ') || '',
         rating: existingGame.rating || 0,
-        systemRequirements: existingGame.systemRequirements || {},
+        systemRequirements: existingGame.systemRequirements || {
+          os: '',
+          processor: '',
+          memory: '',
+          graphics: '',
+          storage: '',
+        },
       }
-    : { platform: 'PC', price: 0, rating: 0, tags: '', imageUrl: '', bannerUrl: '' };
+    : {
+        title: '',
+        platform: 'PC',
+        price: 0,
+        rating: 0,
+        tags: '',
+        imageUrl: '',
+        bannerUrl: '',
+        shortDescription: '',
+        description: '',
+        systemRequirements: {
+          os: '',
+          processor: '',
+          memory: '',
+          graphics: '',
+          storage: '',
+        },
+      };
 
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameFormSchema),
