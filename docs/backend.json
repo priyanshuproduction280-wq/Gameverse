@@ -228,7 +228,7 @@
           "type": "string",
           "enum": [
             "Pending",
-            "Delivered"
+            "Completed"
           ]
         },
         "createdAt": {
