@@ -36,7 +36,7 @@ export type Order = {
     quantity: number;
   }[];
   totalAmount: number;
-  status: 'Pending' | 'Completed';
+  status: boolean;
   createdAt: number;
 };
 

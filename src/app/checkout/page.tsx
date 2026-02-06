@@ -67,7 +67,7 @@ export default function CheckoutPage() {
                 quantity: item.quantity,
             })),
             totalAmount: total,
-            status: 'Pending',
+            status: false,
             createdAt: Date.now()
         };
 

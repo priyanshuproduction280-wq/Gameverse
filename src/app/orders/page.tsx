@@ -38,7 +38,9 @@ function OrderList({ orders, isLoading, emptyMessage }: { orders: Order[], isLoa
                 {format(new Date(order.createdAt), 'MMMM d, yyyy')}
               </p>
             </div>
-            <Badge variant={order.status === 'Completed' ? 'secondary' : 'default'}>{order.status}</Badge>
+            <Badge variant={order.status ? 'secondary' : 'default'}>
+              {order.status ? 'Completed' : 'Pending'}
+            </Badge>
           </div>
           <div className="mt-4">
             <ul className="space-y-3">
@@ -80,8 +82,8 @@ export default function OrdersPage() {
   const { data: orders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
 
   const { pendingOrders, completedOrders } = useMemo(() => {
-    const pending = orders?.filter(o => o.status === 'Pending') || [];
-    const completed = orders?.filter(o => o.status === 'Completed') || [];
+    const pending = orders?.filter(o => o.status === false) || [];
+    const completed = orders?.filter(o => o.status === true) || [];
     return { pendingOrders: pending, completedOrders: completed };
   }, [orders]);
 

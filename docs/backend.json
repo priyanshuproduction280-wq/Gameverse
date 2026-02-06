@@ -225,11 +225,8 @@
           "type": "number"
         },
         "status": {
-          "type": "string",
-          "enum": [
-            "Pending",
-            "Completed"
-          ]
+          "type": "boolean",
+          "description": "The status of the order. 'false' for Pending, 'true' for Completed."
         },
         "createdAt": {
           "type": "number"
