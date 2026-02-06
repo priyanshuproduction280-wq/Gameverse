@@ -9,7 +9,7 @@ import type { Game } from '@/lib/types';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, limit, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from './ui/skeleton';
-import { ArrowRight, Flame, Gamepad2, Sparkles } from 'lucide-react';
+import { ArrowRight, Flame, Gamepad2 } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,15 +38,7 @@ export function HomePageClient() {
     return query(collection(firestore, 'games'), where("rating", ">=", 4.5), limit(3));
   }, [firestore]);
 
-  const newReleasesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    // Assuming no timestamp, we just grab some other games
-    return query(collection(firestore, 'games'), where("price", "<", 1000), limit(3));
-  }, [firestore]);
-
   const { data: featuredGames, isLoading: isLoadingFeatured } = useCollection<Game>(featuredGamesQuery);
-  const { data: newReleases, isLoading: isLoadingNew } = useCollection<Game>(newReleasesQuery);
-
 
   const handleBrowseClick = () => {
     document.getElementById('featured-games')?.scrollIntoView({ behavior: 'smooth' });
@@ -115,35 +107,6 @@ export function HomePageClient() {
               </>
             )}
             {featuredGames?.map((game) => (
-              <GameCard key={game.id} game={game} />
-            ))}
-          </motion.div>
-        </section>
-
-         <section id="new-releases" className="container">
-           <div className="flex items-center gap-4 mb-8">
-            <Sparkles className="w-8 h-8 text-primary" />
-            <h2 className="text-3xl md:text-4xl font-bold">
-              New Releases
-            </h2>
-          </div>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={{
-              visible: { transition: { staggerChildren: 0.1 } },
-            }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {isLoadingNew && (
-              <>
-                <GameCardSkeleton />
-                <GameCardSkeleton />
-                <GameCardSkeleton />
-              </>
-            )}
-            {newReleases?.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}
           </motion.div>
