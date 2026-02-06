@@ -50,7 +50,7 @@ const gameFormSchema = z.object({
   description: z.string().min(10, 'Description is too short.'),
   imageUrl: z.string().min(1, 'A cover image is required.'),
   bannerUrl: z.string().min(1, 'A banner image is required.'),
-  tags: z.string().min(1, 'Please add at least one tag.').transform(val => val.split(',').map(tag => tag.trim())),
+  tags: z.string().min(1, 'Please add at least one tag.'),
   rating: z.coerce.number().min(0).max(5).optional(),
   systemRequirements: z.object({
     os: z.enum(OS_OPTIONS),
@@ -115,7 +115,8 @@ export function GameForm({ existingGame }: GameFormProps) {
     }
 
     const slug = slugify(data.title);
-    const gameData = { ...data, slug };
+    const tagsArray = data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
+    const gameData = { ...data, slug, tags: tagsArray };
 
     try {
       if (existingGame) {
