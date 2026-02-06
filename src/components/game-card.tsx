@@ -11,9 +11,10 @@ import { Heart } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { GameRating } from './game-rating';
+import { WithId } from '@/firebase';
 
 type GameCardProps = {
-  game: Game;
+  game: WithId<Game>;
   className?: string;
 };
 

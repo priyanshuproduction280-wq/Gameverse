@@ -64,7 +64,7 @@ const gameFormSchema = z.object({
 type GameFormValues = z.infer<typeof gameFormSchema>;
 
 type GameFormProps = {
-  existingGame?: Game;
+  existingGame?: Game & { id: string; };
 };
 
 export function GameForm({ existingGame }: GameFormProps) {
