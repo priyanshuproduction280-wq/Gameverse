@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { APP_NAME } from '@/lib/constants';
 import { GamerVerseLogo } from '../icons';
@@ -6,13 +7,13 @@ import { Github, Twitter, Twitch } from 'lucide-react';
 const footerLinks = {
     'GamerVerse': [
         { name: 'All Games', href: '/games' },
-        { name: 'About Us', href: '#' },
-        { name: 'Contact', href: '#' },
+        { name: 'About Us', href: '/about' },
+        { name: 'Contact', href: '/contact' },
     ],
     'Support': [
-        { name: 'FAQ', href: '#' },
-        { name: 'Help Center', href: '#' },
-        { name: 'Terms of Service', href: '#' },
+        { name: 'FAQ', href: '#faq' },
+        { name: 'Help Center', href: '/help-center' },
+        { name: 'Terms of Service', href: '/terms-of-service' },
     ],
 };
 

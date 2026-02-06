@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -28,7 +29,7 @@ const faqItems = [
 
 export function Faq() {
     return (
-        <section className="bg-secondary/30 py-24">
+        <section id="faq" className="bg-secondary/30 py-24">
             <div className="container max-w-4xl">
                  <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold">
