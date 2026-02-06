@@ -100,7 +100,6 @@ export default function GameDetailPage() {
                     src={game.bannerUrl}
                     alt={`${game.title} banner`}
                     fill
-                    data-ai-hint={game.bannerHint}
                     className="object-cover"
                     priority
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 1000px"
@@ -163,7 +162,7 @@ export default function GameDetailPage() {
           <div className="sticky top-24 space-y-6">
              <Card className="overflow-hidden">
                 <div className="relative h-64 w-full">
-                    <Image src={game.imageUrl} alt={game.title} fill data-ai-hint={game.imageHint} className="object-cover" />
+                    <Image src={game.imageUrl} alt={game.title} fill className="object-cover" />
                 </div>
                  <CardContent className="p-4">
                     <p className="text-sm text-muted-foreground line-clamp-3">{game.shortDescription}</p>

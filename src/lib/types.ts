@@ -7,9 +7,7 @@ export type Game = {
   description: string;
   price: number;
   imageUrl: string;
-  imageHint?: string;
   bannerUrl: string;
-  bannerHint?: string;
   tags: string[];
   rating?: number;
   systemRequirements?: {

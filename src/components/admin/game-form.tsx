@@ -48,9 +48,7 @@ const gameFormSchema = z.object({
   shortDescription: z.string().min(10, 'Short description is too short.').max(160, 'Short description is too long.'),
   description: z.string().min(20, 'Description is too short.'),
   imageUrl: z.string().url('Must be a valid URL.'),
-  imageHint: z.string().optional(),
   bannerUrl: z.string().url('Must be a valid URL.'),
-  bannerHint: z.string().optional(),
   tags: z.string().min(1, 'Please add at least one tag.').transform(val => val.split(',').map(tag => tag.trim())),
   rating: z.coerce.number().min(0).max(5).optional(),
   systemRequirements: z.object({
@@ -290,20 +288,6 @@ export function GameForm({ existingGame }: GameFormProps) {
                     />
                     <FormField
                         control={form.control}
-                        name="imageHint"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Image Hint</FormLabel>
-                            <FormControl>
-                                <Input placeholder="futuristic city" {...field} />
-                            </FormControl>
-                            <FormDescription>Keyword hint for AI image generation.</FormDescription>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
                         name="bannerUrl"
                         render={({ field }) => (
                             <FormItem>
@@ -312,20 +296,6 @@ export function GameForm({ existingGame }: GameFormProps) {
                                 <Input placeholder="https://..." {...field} />
                             </FormControl>
                             <FormDescription>URL for the wide banner image (landscape).</FormDescription>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="bannerHint"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Banner Hint</FormLabel>
-                            <FormControl>
-                                <Input placeholder="neon cityscape" {...field} />
-                            </FormControl>
-                            <FormDescription>Keyword hint for AI image generation.</FormDescription>
                             <FormMessage />
                             </FormItem>
                         )}

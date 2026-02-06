@@ -80,18 +80,10 @@
           "format": "uri",
           "description": "URL for the game's primary image."
         },
-        "imageHint": {
-          "type": "string",
-          "description": "AI hint for the image."
-        },
         "bannerUrl": {
           "type": "string",
           "format": "uri",
           "description": "URL for the game's banner image."
-        },
-        "bannerHint": {
-          "type": "string",
-          "description": "AI hint for the banner image."
         },
         "tags": {
           "type": "array",
