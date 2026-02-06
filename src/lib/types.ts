@@ -53,3 +53,12 @@ export type UserProfile = {
 export type PaymentConfig = {
   qrCodeUrl: string;
 };
+
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: number;
+};

@@ -255,6 +255,41 @@
       "required": [
         "qrCodeUrl"
       ]
+    },
+    "ContactMessage": {
+      "title": "Contact Message",
+      "description": "Represents a message sent through the contact form.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The sender's name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The sender's email."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The message subject."
+        },
+        "message": {
+          "type": "string",
+          "description": "The message content."
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Timestamp when the message was sent."
+        }
+      },
+      "required": [
+        "name",
+        "email",
+        "subject",
+        "message",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -294,6 +329,12 @@
         "$ref": "#/entities/PaymentQR"
       },
       "description": "Stores the current payment QR code.  Writable only by admins. Single document collection."
+    },
+    "/contact_messages/{messageId}": {
+      "schema": {
+        "$ref": "#/entities/ContactMessage"
+      },
+      "description": "Stores messages from the contact form. Writable by anyone, but only readable by admins."
     }
   }
 }

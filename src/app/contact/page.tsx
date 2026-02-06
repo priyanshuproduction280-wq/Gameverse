@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Send } from "lucide-react";
+import { useFirestore, addDocumentNonBlocking } from "@/firebase";
+import { collection } from "firebase/firestore";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -24,6 +26,7 @@ type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export default function ContactPage() {
     const { toast } = useToast();
+    const firestore = useFirestore();
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactFormSchema),
@@ -36,6 +39,21 @@ export default function ContactPage() {
     });
 
     const onSubmit = (data: ContactFormValues) => {
+        if (!firestore) {
+            toast({
+                variant: 'destructive',
+                title: 'Submission Failed',
+                description: 'Could not connect to the database. Please try again later.',
+            });
+            return;
+        }
+
+        const contactMessagesRef = collection(firestore, 'contact_messages');
+        addDocumentNonBlocking(contactMessagesRef, {
+            ...data,
+            createdAt: Date.now(),
+        });
+        
         toast({
             title: "Message Sent!",
             description: "Thank you for contacting us. We'll get back to you shortly.",

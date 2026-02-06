@@ -127,5 +127,18 @@ service cloud.firestore {
       allow create, update: if isAdmin();
       allow delete: if isAdmin() && resource != null;
     }
+
+    /**
+     * @description Stores messages from the contact form.
+     * @path /contact_messages/{messageId}
+     * @allow (create) Any user can submit a message.
+     * @deny (update, delete) Messages are immutable from the client.
+     * @principle Public write for submissions, but read/list restricted to admins for privacy.
+     */
+    match /contact_messages/{messageId} {
+      allow get, list: if isAdmin();
+      allow create: if true;
+      allow update, delete: if false;
+    }
   }
 }

@@ -1,34 +1,134 @@
 'use client';
 
-import { AdminLayout } from '@/components/admin/admin-layout';
-import { useUserProfile } from '@/hooks/use-user-profile';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React from 'react';
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarTrigger,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarInset,
+} from '@/components/ui/sidebar';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { GamerVerseLogo } from '@/components/icons';
+import { ADMIN_NAV_LINKS } from '@/lib/constants';
+import { Home, Gamepad2, ShoppingCart, Settings, ArrowLeft, Mail } from 'lucide-react';
+import { UserNav } from '@/components/auth/user-nav';
+import { Button } from '../ui/button';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const { userProfile, isLoading } = useUserProfile();
-  const router = useRouter();
+const ICONS: { [key: string]: React.ElementType } = {
+  Dashboard: Home,
+  Games: Gamepad2,
+  Orders: ShoppingCart,
+  Messages: Mail,
+  Settings: Settings,
+};
 
-  useEffect(() => {
-    // If loading is complete AND we don't have an admin profile, redirect.
-    if (!isLoading && !userProfile?.isAdmin) {
-      router.replace('/');
-    }
-  }, [isLoading, userProfile, router]);
+function AdminBreadcrumbs() {
+  const pathname = usePathname();
+  const pathParts = pathname.split('/').filter(part => part);
 
-  // While loading, or if the user is not an admin (before redirect kicks in),
-  // show the loading spinner. This prevents a flash of the admin content.
-  if (isLoading || !userProfile?.isAdmin) {
+  // Don't show breadcrumbs on the main admin dashboard
+  if (pathParts.length <= 1) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-          <p className="text-muted-foreground">Verifying admin access...</p>
-        </div>
-      </div>
+        <h1 className="text-xl font-semibold">Dashboard</h1>
     );
   }
 
-  // If loading is complete and the user is an admin, render the layout.
-  return <AdminLayout>{children}</AdminLayout>;
+  const breadcrumbs = pathParts.slice(1).map((part, index) => {
+    const href = '/admin/' + pathParts.slice(1, index + 2).join('/');
+    // Capitalize and decode URI component for display
+    const text = decodeURIComponent(part).split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const isLast = index === pathParts.length - 2;
+
+    return { href, text, isLast };
+  });
+
+  return (
+    <Breadcrumb className="hidden md:flex">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/admin">Dashboard</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        {breadcrumbs.map((crumb, index) => (
+          <React.Fragment key={crumb.href}>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              {crumb.isLast ? (
+                <BreadcrumbPage>{crumb.text}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <Link href={crumb.href}>{crumb.text}</Link>
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+          </React.Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+export function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader>
+          <GamerVerseLogo />
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarMenu>
+            {ADMIN_NAV_LINKS.map((link) => {
+              const Icon = ICONS[link.name];
+              return (
+                <SidebarMenuItem key={link.href}>
+                  <SidebarMenuButton
+                    isActive={
+                      pathname === link.href ||
+                      (link.href !== '/admin' && pathname.startsWith(link.href))
+                    }
+                    asChild
+                  >
+                    <Link href={link.href}>
+                      {Icon && <Icon />}
+                      <span>{link.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset>
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:px-6">
+          <SidebarTrigger className="sm:hidden" />
+          <AdminBreadcrumbs />
+          <div className="ml-auto flex items-center gap-2">
+             <Button variant="outline" size="sm" asChild>
+              <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Store</Link>
+            </Button>
+            <UserNav />
+          </div>
+        </header>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
