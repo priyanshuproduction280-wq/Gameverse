@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -90,7 +89,7 @@ export default function CheckoutPage() {
                 description: "Your order has been submitted. Thank you!",
             });
             
-            router.push('/profile');
+            router.push('/orders');
         } catch (error: any) {
              toast({
                 variant: "destructive",
