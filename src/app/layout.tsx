@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`,
   },
   description: 'A premium, modern game-selling website.',
+  icons: {
+    icon: '/favicon.ico',
+  }
 };
 
 export default function RootLayout({
