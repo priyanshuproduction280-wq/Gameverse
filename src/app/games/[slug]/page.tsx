@@ -5,11 +5,11 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, CheckCircle, Info, ShoppingCart, Zap } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import type { Game } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GameRating } from '@/components/game-rating';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -38,7 +38,7 @@ function GameDetailSkeleton() {
 
 export default function GameDetailPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const gameId = params.slug as string; // The URL parameter is the game's document ID
   const firestore = useFirestore();
   const { toast } = useToast();
   const { user } = useUser();
@@ -46,18 +46,14 @@ export default function GameDetailPage() {
 
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  // Query for the game document where the 'slug' field matches the URL slug.
-  const gameQuery = useMemoFirebase(() => {
-    if (!firestore || !slug) return null;
-    return query(collection(firestore, 'games'), where('slug', '==', slug), limit(1));
-  }, [firestore, slug]);
+  // Fetch the game document directly by its ID.
+  const gameRef = useMemoFirebase(() => {
+    if (!firestore || !gameId) return null;
+    return doc(firestore, 'games', gameId);
+  }, [firestore, gameId]);
 
-  // Use the `useCollection` hook, as we are now using a query.
-  const { data: games, isLoading } = useCollection<Game>(gameQuery);
-
-  // The result of `useCollection` is an array, so we take the first item.
-  const game = useMemo(() => (games && games.length > 0 ? games[0] : null), [games]);
-
+  // Use the `useDoc` hook to get a single document.
+  const { data: game, isLoading } = useDoc<Game>(gameRef);
 
   useEffect(() => {
     if (game?.title) {
@@ -88,7 +84,7 @@ export default function GameDetailPage() {
 
     const cartCollectionRef = collection(firestore, 'users', user.uid, 'carts');
     addDocumentNonBlocking(cartCollectionRef, {
-      gameId: game.id, // game.id is available because useCollection returns WithId<T>
+      gameId: game.id, // game.id is available because useDoc returns WithId<T>
       quantity: 1,
       title: game.title,
       price: game.price,
