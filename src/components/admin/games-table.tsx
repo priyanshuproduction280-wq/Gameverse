@@ -25,14 +25,7 @@ import { useCollection, useFirestore, useMemoFirebase, deleteDocumentNonBlocking
 import { collection, doc, query } from 'firebase/firestore';
 import type { Game } from '@/lib/types';
 import { Badge } from '../ui/badge';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+import { Pencil, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -89,9 +82,7 @@ export function GamesTable() {
             <TableHead>Title</TableHead>
             <TableHead>Platform</TableHead>
             <TableHead className="hidden md:table-cell">Price</TableHead>
-            <TableHead>
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -110,8 +101,11 @@ export function GamesTable() {
                 <TableCell className="hidden md:table-cell">
                   <Skeleton className="h-4 w-16" />
                 </TableCell>
-                <TableCell>
-                  <Skeleton className="h-8 w-8" />
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -133,46 +127,41 @@ export function GamesTable() {
               <TableCell className="hidden md:table-cell">
                 {game.price > 0 ? `₹${game.price.toFixed(2)}` : 'Free'}
               </TableCell>
-              <TableCell>
-                <AlertDialog>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                    <Button asChild variant="ghost" size="icon">
                       <Link href={`/admin/games/${game.id}/edit`}>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
                       </Link>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+                    </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete the game &quot;{game.title}&quot;.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(game.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
                           Delete
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete the game &quot;{game.title}&quot;.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDelete(game.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </TableCell>
             </TableRow>
           ))}
