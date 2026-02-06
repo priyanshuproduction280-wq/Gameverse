@@ -6,6 +6,7 @@ import { APP_NAME } from '@/lib/constants';
 import { Providers } from './providers';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { Faq } from '@/components/faq';
 
 const fontBody = Inter({
   subsets: ['latin'],
@@ -43,6 +44,7 @@ export default function RootLayout({
           <div className="relative flex min-h-dvh flex-col bg-background">
             <Header />
             <main className="flex-1">{children}</main>
+            <Faq />
             <Footer />
           </div>
         </Providers>

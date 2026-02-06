@@ -6,7 +6,7 @@ export default function NewGamePage() {
     <Card>
       <CardHeader>
         <CardTitle>Add New Game</CardTitle>
-        <CardDescription>Fill out the form below to add a new game to your store.</CardDescription>
+        <CardDescription>Fill out the form below to add a new game to the store.</CardDescription>
       </CardHeader>
       <CardContent>
         <GameForm />

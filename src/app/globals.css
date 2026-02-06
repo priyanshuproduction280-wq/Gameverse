@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -32,27 +28,27 @@ body {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
   .dark {
-    --background: 210 10% 15%;
-    --foreground: 0 0% 98%;
-    --card: 210 10% 20%;
-    --card-foreground: 0 0% 98%;
-    --popover: 210 10% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 271 26% 45%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 210 10% 25%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 210 10% 25%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 266 96% 71%;
-    --accent-foreground: 210 10% 15%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 210 10% 30%;
-    --input: 210 10% 30%;
+    --background: 224 71% 4%; /* Deep, dark blue */
+    --foreground: 210 40% 98%;
+    --card: 220 40% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 266 96% 71%; /* Vibrant Purple */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 21% 51%;
+    --accent: 173 96% 42%; /* Bright Cyan/Green */
+    --accent-foreground: 224 71% 4%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
     --ring: 266 96% 71%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -71,10 +67,18 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
 }
 
 @layer utilities {
   .glassmorphism {
-    @apply bg-card/50 backdrop-blur-lg border border-white/10;
+    @apply bg-card/50 backdrop-blur-xl border border-white/5;
+  }
+  
+  .animate-tilt {
+    animation: tilt 10s infinite linear;
   }
 }

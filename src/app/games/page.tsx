@@ -1,4 +1,5 @@
 import { GamesPageClient } from '@/components/games-page-client';
+import { Suspense } from 'react';
 
 export const metadata = {
   title: 'All Games',
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function GamesPage() {
-  return <GamesPageClient />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GamesPageClient />
+    </Suspense>
+  );
 }

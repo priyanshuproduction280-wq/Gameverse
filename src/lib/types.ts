@@ -11,6 +11,14 @@ export type Game = {
   bannerUrl: string;
   bannerHint?: string;
   tags: string[];
+  rating?: number;
+  systemRequirements?: {
+    os: string;
+    processor: string;
+    memory: string;
+    graphics: string;
+    storage: string;
+  }
 };
 
 export type CartItem = {

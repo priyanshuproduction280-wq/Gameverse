@@ -99,6 +99,21 @@
             "type": "string"
           },
           "description": "Tags associated with the game."
+        },
+        "rating": {
+          "type": "number",
+          "description": "The game's average user rating (out of 5)."
+        },
+        "systemRequirements": {
+          "type": "object",
+          "properties": {
+            "os": { "type": "string" },
+            "processor": { "type": "string" },
+            "memory": { "type": "string" },
+            "graphics": { "type": "string" },
+            "storage": { "type": "string" }
+          },
+          "description": "The minimum system requirements to run the game."
         }
       },
       "required": [
