@@ -112,13 +112,14 @@ export function GameForm({ existingGame }: GameFormProps) {
   });
   
   const title = form.watch('title');
-  const isCreating = !existingGame;
 
   useEffect(() => {
-      if (isCreating) {
-          form.setValue('slug', slugify(title), { shouldValidate: true });
-      }
-  }, [title, form, isCreating]);
+    // Only auto-generate the slug when creating a new game.
+    // Do not run this logic if we are editing an existing game.
+    if (!existingGame) {
+      form.setValue('slug', slugify(title), { shouldValidate: true });
+    }
+  }, [title, form, existingGame]);
 
   const onSubmit = (data: GameFormValues) => {
     if (!firestore) {
