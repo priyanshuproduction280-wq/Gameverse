@@ -44,7 +44,7 @@ export function GameCard({ game, className }: GameCardProps) {
     >
       <div className="absolute -inset-0.5 bg-gradient-to-r from-accent to-primary rounded-lg blur-xl opacity-0 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
       
-      <Link href={`/games/${game.slug}`} className="relative block h-full">
+      <Link href={`/games/${game.id}`} className="relative block h-full">
         <div className="relative h-full overflow-hidden rounded-lg bg-card border border-white/10 shadow-lg hover:shadow-primary/20 transition-shadow duration-300 ease-in-out flex flex-col">
             <motion.div
                 className="relative h-[300px] w-full"

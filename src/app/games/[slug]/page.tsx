@@ -5,8 +5,8 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, CheckCircle, Info, ShoppingCart, Zap } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import type { Game } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
@@ -38,7 +38,9 @@ function GameDetailSkeleton() {
 
 export default function GameDetailPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  // The parameter from the URL is the game's document ID.
+  // It's named 'slug' because the folder is named `[slug]`, but we treat it as an ID.
+  const gameId = params.slug as string;
   const firestore = useFirestore();
   const { toast } = useToast();
   const { user } = useUser();
@@ -46,13 +48,14 @@ export default function GameDetailPage() {
 
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  const gameQuery = useMemoFirebase(() => {
-    if (!firestore || !slug) return null;
-    return query(collection(firestore, 'games'), where('slug', '==', slug), limit(1));
-  }, [firestore, slug]);
+  // Create a direct document reference using the game ID from the URL.
+  const gameRef = useMemoFirebase(() => {
+    if (!firestore || !gameId) return null;
+    return doc(firestore, 'games', gameId);
+  }, [firestore, gameId]);
 
-  const { data: games, isLoading } = useCollection<Game>(gameQuery);
-  const game = games?.[0];
+  // Use the `useDoc` hook for efficient, real-time fetching of a single document.
+  const { data: game, isLoading } = useDoc<Game>(gameRef);
 
   useEffect(() => {
     if (game?.title) {
@@ -64,7 +67,7 @@ export default function GameDetailPage() {
     setIsWishlisted(!isWishlisted);
     toast({
         title: isWishlisted ? 'Removed from Wishlist' : 'Added to Wishlist',
-        description: `${game.title} has been ${isWishlisted ? 'removed from' : 'added to'} your wishlist.`,
+        description: `${game?.title} has been ${isWishlisted ? 'removed from' : 'added to'} your wishlist.`,
     })
   }
 
