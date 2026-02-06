@@ -1,7 +1,7 @@
 'use client';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, ShieldCheck, Download, CreditCard } from "lucide-react";
+import { MailCheck, ShieldCheck, Download, CreditCard } from "lucide-react";
 
 const faqItems = [
     {
@@ -15,9 +15,14 @@ const faqItems = [
         answer: "Absolutely. We use industry-standard encryption and work with trusted payment processors to ensure your financial data is always protected."
     },
     {
+        icon: MailCheck,
+        question: "How are my orders confirmed?",
+        answer: "After you place an order, it will appear as 'Pending' in your 'My Orders' page. Once your payment is manually verified by our team, the order status will be updated to 'Completed'."
+    },
+    {
         icon: Download,
-        question: "How do I download and install my games?",
-        answer: "Once your purchase is complete, you'll receive a digital key and a download link. Follow the instructions to redeem your key on the respective platform (like Steam or Epic Games) and install your game."
+        question: "How do I get my game after purchase?",
+        answer: "Once your order is 'Completed', we will email you the username and password for a Steam account that contains your purchased game. You can then log in with those details to download and play."
     }
 ]
 
