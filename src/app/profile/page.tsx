@@ -9,16 +9,12 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { useAuth, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, doc, orderBy, query } from "firebase/firestore";
+import { useAuth, useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import type { Order } from "@/lib/types";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // Schema for form validation
 const profileFormSchema = z.object({
@@ -28,72 +24,6 @@ const profileFormSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
-
-
-function OrderHistory() {
-  const { userProfile } = useUserProfile();
-  const firestore = useFirestore();
-
-  const ordersQuery = useMemoFirebase(() => {
-    if (!userProfile) return null;
-    return query(collection(firestore, 'users', userProfile.uid, 'orders'), orderBy('createdAt', 'desc'));
-  }, [firestore, userProfile]);
-
-  const { data: orders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
-
-  return (
-    <Card id="orders" className="max-w-2xl mx-auto glassmorphism mt-8">
-      <CardHeader>
-        <CardTitle className="text-2xl font-headline">My Orders</CardTitle>
-        <CardDescription>View your past orders.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {areOrdersLoading && (
-          <div className="space-y-4">
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-          </div>
-        )}
-        {!areOrdersLoading && (!orders || orders.length === 0) && (
-          <p className="text-muted-foreground text-center py-8">You have no orders yet.</p>
-        )}
-        {!areOrdersLoading && orders && orders.length > 0 && (
-          <div className="space-y-6">
-            {orders.map(order => (
-              <div key={order.id} className="p-4 border rounded-lg bg-card/50">
-                <div className="flex justify-between items-start gap-4">
-                  <div>
-                    <p className="font-semibold text-sm">
-                      Order ID: <span className="font-mono text-xs">{order.id.substring(0, 8)}...</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(order.createdAt), 'MMMM d, yyyy')}
-                    </p>
-                  </div>
-                  <Badge variant={order.status === 'Delivered' ? 'secondary' : 'default'}>{order.status}</Badge>
-                </div>
-                <div className="mt-4">
-                  <ul className="space-y-3">
-                    {order.items.map((item, index) => (
-                      <li key={index} className="flex justify-between items-center text-sm">
-                        <span className="flex-grow truncate pr-4">{item.title} <span className="text-muted-foreground"> (x{item.quantity})</span></span>
-                        <span className="font-medium">₹{item.price.toFixed(2)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mt-4 pt-4 border-t flex justify-between font-bold text-base">
-                  <span>Total</span>
-                  <span>₹{order.totalAmount.toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
 
 export default function ProfilePage() {
   const { userProfile, isLoading: isProfileLoading } = useUserProfile();
@@ -246,7 +176,6 @@ export default function ProfilePage() {
           </Form>
         </CardContent>
       </Card>
-      <OrderHistory />
     </div>
   );
 }

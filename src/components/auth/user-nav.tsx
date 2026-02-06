@@ -71,7 +71,7 @@ export function UserNav() {
               <span>Profile</span>
             </DropdownMenuItem>
           </Link>
-          <Link href="/profile#orders">
+          <Link href="/orders">
             <DropdownMenuItem>
               <CreditCard className="mr-2 h-4 w-4" />
               <span>My Orders</span>
