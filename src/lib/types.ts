@@ -1,3 +1,5 @@
+import type { OsOption, ProcessorOption, MemoryOption, GraphicsOption, StorageOption } from './system-requirements';
+
 export type Game = {
   id: string;
   slug: string;
@@ -10,11 +12,11 @@ export type Game = {
   tags: string[];
   rating?: number;
   systemRequirements?: {
-    os: string;
-    processor: string;
-    memory: string;
-    graphics: string;
-    storage: string;
+    os: OsOption;
+    processor: ProcessorOption;
+    memory: MemoryOption;
+    graphics: GraphicsOption;
+    storage: StorageOption;
   }
 };
 

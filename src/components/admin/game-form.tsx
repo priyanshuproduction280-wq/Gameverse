@@ -29,6 +29,7 @@ import {
 } from '../ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import Image from 'next/image';
+import { OS_OPTIONS, PROCESSOR_OPTIONS, MEMORY_OPTIONS, GRAPHICS_OPTIONS, STORAGE_OPTIONS } from '@/lib/system-requirements';
 
 const slugify = (text: string) => {
   if (!text) return '';
@@ -52,12 +53,12 @@ const gameFormSchema = z.object({
   tags: z.string().min(1, 'Please add at least one tag.').transform(val => val.split(',').map(tag => tag.trim())),
   rating: z.coerce.number().min(0).max(5).optional(),
   systemRequirements: z.object({
-    os: z.string().optional(),
-    processor: z.string().optional(),
-    memory: z.string().optional(),
-    graphics: z.string().optional(),
-    storage: z.string().optional(),
-  }).optional(),
+    os: z.enum(OS_OPTIONS),
+    processor: z.enum(PROCESSOR_OPTIONS),
+    memory: z.enum(MEMORY_OPTIONS),
+    graphics: z.enum(GRAPHICS_OPTIONS),
+    storage: z.enum(STORAGE_OPTIONS),
+  }),
 });
 
 type GameFormValues = z.infer<typeof gameFormSchema>;
@@ -77,11 +78,11 @@ export function GameForm({ existingGame }: GameFormProps) {
         tags: existingGame.tags?.join(', ') || '',
         rating: existingGame.rating || 0,
         systemRequirements: existingGame.systemRequirements || {
-          os: '',
-          processor: '',
-          memory: '',
-          graphics: '',
-          storage: '',
+          os: OS_OPTIONS[0],
+          processor: PROCESSOR_OPTIONS[0],
+          memory: MEMORY_OPTIONS[0],
+          graphics: GRAPHICS_OPTIONS[0],
+          storage: STORAGE_OPTIONS[0],
         },
       }
     : {
@@ -94,11 +95,11 @@ export function GameForm({ existingGame }: GameFormProps) {
         bannerUrl: '',
         description: '',
         systemRequirements: {
-          os: '',
-          processor: '',
-          memory: '',
-          graphics: '',
-          storage: '',
+          os: OS_OPTIONS[0],
+          processor: PROCESSOR_OPTIONS[0],
+          memory: MEMORY_OPTIONS[0],
+          graphics: GRAPHICS_OPTIONS[0],
+          storage: STORAGE_OPTIONS[0],
         },
       };
 
@@ -236,7 +237,7 @@ export function GameForm({ existingGame }: GameFormProps) {
 
              <Card>
                 <CardHeader><CardTitle>Description</CardTitle></CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent>
                     <FormField
                     control={form.control}
                     name="description"
@@ -258,19 +259,64 @@ export function GameForm({ existingGame }: GameFormProps) {
                  <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField control={form.control} name="systemRequirements.os" render={({ field }) => (
-                            <FormItem><FormLabel>Operating System</FormLabel><FormControl><Input placeholder="Windows 10 64-bit" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>Operating System</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select an OS" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        {OS_OPTIONS.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <FormField control={form.control} name="systemRequirements.processor" render={({ field }) => (
-                            <FormItem><FormLabel>Processor</FormLabel><FormControl><Input placeholder="Intel Core i5-9600K or AMD Ryzen 5 3600" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>Processor</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select a Processor" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        {PROCESSOR_OPTIONS.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <FormField control={form.control} name="systemRequirements.memory" render={({ field }) => (
-                            <FormItem><FormLabel>Memory</FormLabel><FormControl><Input placeholder="16 GB RAM" {...field} /></FormControl><FormMessage /></FormItem>
+                           <FormItem>
+                                <FormLabel>Memory</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Memory" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        {MEMORY_OPTIONS.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                         <FormField control={form.control} name="systemRequirements.graphics" render={({ field }) => (
-                            <FormItem><FormLabel>Graphics</FormLabel><FormControl><Input placeholder="NVIDIA GeForce GTX 1060 6GB or AMD Radeon RX 580 8GB" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <FormLabel>Graphics</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Graphics" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        {GRAPHICS_OPTIONS.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                          <FormField control={form.control} name="systemRequirements.storage" render={({ field }) => (
-                            <FormItem className="md:col-span-2"><FormLabel>Storage</FormLabel><FormControl><Input placeholder="70 GB available space" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem className="md:col-span-2">
+                                <FormLabel>Storage</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select Storage" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        {STORAGE_OPTIONS.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
                         )} />
                     </div>
                 </CardContent>
