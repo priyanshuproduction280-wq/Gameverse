@@ -47,9 +47,11 @@ export function Header() {
           ))}
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-2">
-            <Button variant="ghost" size="icon" className="hidden md:inline-flex">
+            <Button asChild variant="ghost" size="icon" className="hidden md:inline-flex">
+              <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 <span className="sr-only">Cart</span>
+              </Link>
             </Button>
           <UserNav />
           <Button
@@ -81,8 +83,10 @@ export function Header() {
                 </Link>
               ))}
                 <div className='pt-4 border-t'>
-                    <Button variant="ghost" className="w-full justify-start text-lg">
+                    <Button asChild variant="ghost" className="w-full justify-start text-lg">
+                      <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
                         <ShoppingCart className="mr-2 h-5 w-5" /> Cart
+                      </Link>
                     </Button>
                 </div>
             </nav>

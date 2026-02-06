@@ -1,12 +1,11 @@
 'use client';
 
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Heart, CheckCircle, Info, ShoppingCart, Star, Zap } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { Heart, CheckCircle, Info, ShoppingCart, Zap } from 'lucide-react';
+import { useCollection, useFirestore, useMemoFirebase, useUser, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import type { Game } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +14,7 @@ import { GameRating } from '@/components/game-rating';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 
 function GameDetailSkeleton() {
     return (
@@ -41,6 +41,8 @@ export default function GameDetailPage() {
   const slug = params.slug as string;
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { user } = useUser();
+  const router = useRouter();
 
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -58,20 +60,78 @@ export default function GameDetailPage() {
     }
   }, [game]);
 
-  if (isLoading) {
-    return <GameDetailSkeleton />;
-  }
-
-  if (!game) {
-    notFound();
-  }
-
   const handleWishlistClick = () => {
     setIsWishlisted(!isWishlisted);
     toast({
         title: isWishlisted ? 'Removed from Wishlist' : 'Added to Wishlist',
         description: `${game.title} has been ${isWishlisted ? 'removed from' : 'added to'} your wishlist.`,
     })
+  }
+
+  const handleAddToCart = () => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Please log in',
+        description: 'You need to be logged in to add items to your cart.',
+        action: <ToastAction altText="Login" onClick={() => router.push('/login')}>Login</ToastAction>,
+      });
+      return;
+    }
+
+    if (!game || !firestore) return;
+
+    const cartCollectionRef = collection(firestore, 'users', user.uid, 'carts');
+    addDocumentNonBlocking(cartCollectionRef, {
+      gameId: game.id,
+      quantity: 1,
+      title: game.title,
+      price: game.price,
+      imageUrl: game.imageUrl,
+    });
+
+    toast({
+      title: 'Added to Cart',
+      description: `${game.title} has been added to your cart.`,
+      action: <ToastAction altText="View Cart" onClick={() => router.push('/cart')}>View Cart</ToastAction>,
+    });
+  };
+
+  const handleBuyNow = () => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Please log in',
+        description: 'You need to be logged in to purchase.',
+        action: <ToastAction altText="Login" onClick={() => router.push('/login')}>Login</ToastAction>,
+      });
+      return;
+    }
+    
+    if (!game || !firestore) return;
+
+    const cartCollectionRef = collection(firestore, 'users', user.uid, 'carts');
+    addDocumentNonBlocking(cartCollectionRef, {
+      gameId: game.id,
+      quantity: 1,
+      title: game.title,
+      price: game.price,
+      imageUrl: game.imageUrl,
+    });
+
+    toast({
+      title: 'Added to Cart',
+      description: `Redirecting to your cart...`,
+    });
+    router.push('/cart');
+  };
+
+  if (isLoading) {
+    return <GameDetailSkeleton />;
+  }
+
+  if (!game) {
+    notFound();
   }
 
   return (
@@ -170,11 +230,11 @@ export default function GameDetailPage() {
              </Card>
 
             <div className="space-y-3">
-                <Button size="lg" className="w-full font-bold text-lg">
+                <Button size="lg" className="w-full font-bold text-lg" onClick={handleBuyNow}>
                     <Zap className="mr-2" /> Buy Now
                 </Button>
                 <div className="flex gap-3">
-                     <Button size="lg" variant="secondary" className="w-full">
+                     <Button size="lg" variant="secondary" className="w-full" onClick={handleAddToCart}>
                         <ShoppingCart className="mr-2" /> Add to Cart
                     </Button>
                     <Button size="icon" variant={isWishlisted ? "secondary" : "outline"} onClick={handleWishlistClick} aria-label="Add to wishlist" className="w-11 h-11 flex-shrink-0">
