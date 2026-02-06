@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { APP_NAME } from '@/lib/constants';
 import { GamerVerseLogo } from '../icons';
-import { Github, Twitter, Twitch } from 'lucide-react';
+import { Github, Twitter, Twitch, Instagram } from 'lucide-react';
 
 const footerLinks = {
     'GamerVerse': [
@@ -47,6 +47,7 @@ export function Footer() {
             <div className="lg:col-span-2 space-y-4">
                 <h4 className="font-semibold text-foreground">Follow Us</h4>
                 <div className="flex items-center gap-4">
+                    <Link href="https://www.instagram.com/steeam.mafia/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-foreground transition-colors"><Instagram /></Link>
                     <Link href="#" aria-label="Twitter" className="text-muted-foreground hover:text-foreground transition-colors"><Twitter /></Link>
                     <Link href="#" aria-label="Twitch" className="text-muted-foreground hover:text-foreground transition-colors"><Twitch /></Link>
                     <Link href="#" aria-label="GitHub" className="text-muted-foreground hover:text-foreground transition-colors"><Github /></Link>
