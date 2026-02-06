@@ -3,7 +3,6 @@ export type Game = {
   slug: string;
   title: string;
   platform: 'PC' | 'PS' | 'Xbox';
-  shortDescription: string;
   description: string;
   price: number;
   imageUrl: string;

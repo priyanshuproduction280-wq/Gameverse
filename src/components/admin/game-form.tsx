@@ -46,8 +46,7 @@ const gameFormSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
   platform: z.enum(['PC']),
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
-  shortDescription: z.string().min(10, 'Short description is too short.').max(160, 'Short description is too long.'),
-  description: z.string().min(20, 'Description is too short.'),
+  description: z.string().min(10, 'Description is too short.'),
   imageUrl: z.string().min(1, 'A cover image is required.'),
   bannerUrl: z.string().min(1, 'A banner image is required.'),
   tags: z.string().min(1, 'Please add at least one tag.').transform(val => val.split(',').map(tag => tag.trim())),
@@ -93,7 +92,6 @@ export function GameForm({ existingGame }: GameFormProps) {
         tags: '',
         imageUrl: '',
         bannerUrl: '',
-        shortDescription: '',
         description: '',
         systemRequirements: {
           os: '',
@@ -237,33 +235,20 @@ export function GameForm({ existingGame }: GameFormProps) {
              </Card>
 
              <Card>
-                <CardHeader><CardTitle>Descriptions</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Description</CardTitle></CardHeader>
                 <CardContent className="space-y-6">
-                     <FormField
-                        control={form.control}
-                        name="shortDescription"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Short Description</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="A brief, catchy summary of the game for game cards." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Full Description</FormLabel>
-                            <FormControl>
-                                <Textarea rows={5} placeholder="The full, detailed description for the game's page." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
+                    <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Full Description</FormLabel>
+                        <FormControl>
+                            <Textarea rows={5} placeholder="The full, detailed description for the game's page." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                     />
                 </CardContent>
             </Card>

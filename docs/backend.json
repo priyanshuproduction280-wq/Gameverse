@@ -63,10 +63,6 @@
           ],
           "description": "The platform the game is for."
         },
-        "shortDescription": {
-          "type": "string",
-          "description": "A short summary of the game."
-        },
         "description": {
           "type": "string",
           "description": "A full description of the game."
@@ -112,7 +108,6 @@
         "slug",
         "title",
         "platform",
-        "shortDescription",
         "description",
         "price",
         "imageUrl"

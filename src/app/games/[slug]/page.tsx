@@ -165,7 +165,7 @@ export default function GameDetailPage() {
                     <Image src={game.imageUrl} alt={game.title} fill className="object-cover" />
                 </div>
                  <CardContent className="p-4">
-                    <p className="text-sm text-muted-foreground line-clamp-3">{game.shortDescription}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-3">{game.description}</p>
                  </CardContent>
              </Card>
 
