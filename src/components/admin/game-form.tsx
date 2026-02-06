@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, WithId } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import type { Game } from '@/lib/types';
@@ -30,6 +30,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import Image from 'next/image';
 import { OS_OPTIONS, PROCESSOR_OPTIONS, MEMORY_OPTIONS, GRAPHICS_OPTIONS, STORAGE_OPTIONS } from '@/lib/system-requirements';
+import { useEffect } from 'react';
 
 const slugify = (text: string) => {
   if (!text) return '';
@@ -45,6 +46,7 @@ const slugify = (text: string) => {
 
 const gameFormSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
+  slug: z.string().min(3, 'Slug must be at least 3 characters.').regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be a valid URL slug.'),
   platform: z.enum(['PC']),
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
   description: z.string().min(10, 'Description is too short.'),
@@ -64,7 +66,7 @@ const gameFormSchema = z.object({
 type GameFormValues = z.infer<typeof gameFormSchema>;
 
 type GameFormProps = {
-  existingGame?: Game & { id: string; };
+  existingGame?: WithId<Game>;
 };
 
 export function GameForm({ existingGame }: GameFormProps) {
@@ -87,6 +89,7 @@ export function GameForm({ existingGame }: GameFormProps) {
       }
     : {
         title: '',
+        slug: '',
         platform: 'PC',
         price: 0,
         rating: 0,
@@ -107,6 +110,15 @@ export function GameForm({ existingGame }: GameFormProps) {
     resolver: zodResolver(gameFormSchema),
     defaultValues,
   });
+  
+  const title = form.watch('title');
+  const isCreating = !existingGame;
+
+  useEffect(() => {
+      if (isCreating) {
+          form.setValue('slug', slugify(title), { shouldValidate: true });
+      }
+  }, [title, form, isCreating]);
 
   const onSubmit = (data: GameFormValues) => {
     if (!firestore) {
@@ -114,9 +126,8 @@ export function GameForm({ existingGame }: GameFormProps) {
       return;
     }
 
-    const slug = slugify(data.title);
     const tagsArray = data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
-    const gameData = { ...data, slug, tags: tagsArray };
+    const gameData = { ...data, tags: tagsArray };
 
     try {
       if (existingGame) {
@@ -168,6 +179,22 @@ export function GameForm({ existingGame }: GameFormProps) {
                         <FormMessage />
                         </FormItem>
                     )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="slug"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Slug</FormLabel>
+                          <FormControl>
+                            <Input placeholder="cybernetic-horizons" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            A unique, URL-friendly identifier for the game.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <FormField
@@ -336,9 +363,9 @@ export function GameForm({ existingGame }: GameFormProps) {
                             <FormLabel>Cover Image</FormLabel>
                             <FormControl>
                                 <div>
-                                    {field.value && (
+                                    {form.getValues('imageUrl') && (
                                         <div className="relative w-full h-48 mb-2 rounded-md overflow-hidden border">
-                                            <Image src={field.value} alt="Cover image preview" layout="fill" objectFit="contain" />
+                                            <Image src={form.getValues('imageUrl')} alt="Cover image preview" layout="fill" objectFit="contain" />
                                         </div>
                                     )}
                                     <Input 
@@ -370,9 +397,9 @@ export function GameForm({ existingGame }: GameFormProps) {
                             <FormLabel>Banner Image</FormLabel>
                              <FormControl>
                                 <div>
-                                    {field.value && (
+                                    {form.getValues('bannerUrl') && (
                                         <div className="relative w-full aspect-video mb-2 rounded-md overflow-hidden border">
-                                            <Image src={field.value} alt="Banner image preview" layout="fill" objectFit="contain" />
+                                            <Image src={form.getValues('bannerUrl')} alt="Banner image preview" layout="fill" objectFit="contain" />
                                         </div>
                                     )}
                                     <Input 

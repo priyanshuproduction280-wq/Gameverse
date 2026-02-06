@@ -1,8 +1,8 @@
 import type { OsOption, ProcessorOption, MemoryOption, GraphicsOption, StorageOption } from './system-requirements';
 
 export type Game = {
-  slug: string;
   title: string;
+  slug: string;
   platform: 'PC' | 'PS' | 'Xbox';
   description: string;
   price: number;
