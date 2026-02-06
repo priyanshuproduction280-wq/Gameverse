@@ -9,7 +9,7 @@ import type { Game } from '@/lib/types';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, limit, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from './ui/skeleton';
-import { ArrowRight, Flame, Gamepad2 } from 'lucide-react';
+import { ArrowRight, Flame, Gamepad2, Instagram } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -76,6 +76,11 @@ export function HomePageClient() {
             >
               <Button size="lg" className="font-bold text-lg" onClick={handleBrowseClick}>
                 <Gamepad2 className="mr-2" /> Start Exploring
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="https://www.instagram.com/steeam.mafia/" target="_blank" rel="noopener noreferrer">
+                  <Instagram className="mr-2" /> Follow on Instagram
+                </Link>
               </Button>
             </motion.div>
           </motion.div>
