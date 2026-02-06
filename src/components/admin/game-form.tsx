@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '../ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import Image from 'next/image';
 
 const slugify = (text: string) => {
   if (!text) return '';
@@ -47,8 +48,8 @@ const gameFormSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
   shortDescription: z.string().min(10, 'Short description is too short.').max(160, 'Short description is too long.'),
   description: z.string().min(20, 'Description is too short.'),
-  imageUrl: z.string().url('Must be a valid URL.'),
-  bannerUrl: z.string().url('Must be a valid URL.'),
+  imageUrl: z.string().min(1, 'A cover image is required.'),
+  bannerUrl: z.string().min(1, 'A banner image is required.'),
   tags: z.string().min(1, 'Please add at least one tag.').transform(val => val.split(',').map(tag => tag.trim())),
   rating: z.coerce.number().min(0).max(5).optional(),
   systemRequirements: z.object({
@@ -78,7 +79,7 @@ export function GameForm({ existingGame }: GameFormProps) {
         rating: existingGame.rating || 0,
         systemRequirements: existingGame.systemRequirements || {},
       }
-    : { platform: 'PC', price: 0, rating: 0, tags: '' };
+    : { platform: 'PC', price: 0, rating: 0, tags: '', imageUrl: '', bannerUrl: '' };
 
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameFormSchema),
@@ -277,9 +278,29 @@ export function GameForm({ existingGame }: GameFormProps) {
                         name="imageUrl"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Cover Image URL</FormLabel>
+                            <FormLabel>Cover Image</FormLabel>
                             <FormControl>
-                                <Input placeholder="https://..." {...field} />
+                                <div>
+                                    {field.value && (
+                                        <div className="relative w-full h-48 mb-2 rounded-md overflow-hidden border">
+                                            <Image src={field.value} alt="Cover image preview" layout="fill" objectFit="contain" />
+                                        </div>
+                                    )}
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    field.onChange(reader.result as string);
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                    />
+                                </div>
                             </FormControl>
                             <FormDescription>URL for the main game cover (portrait).</FormDescription>
                             <FormMessage />
@@ -291,9 +312,29 @@ export function GameForm({ existingGame }: GameFormProps) {
                         name="bannerUrl"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Banner Image URL</FormLabel>
-                            <FormControl>
-                                <Input placeholder="https://..." {...field} />
+                            <FormLabel>Banner Image</FormLabel>
+                             <FormControl>
+                                <div>
+                                    {field.value && (
+                                        <div className="relative w-full aspect-video mb-2 rounded-md overflow-hidden border">
+                                            <Image src={field.value} alt="Banner image preview" layout="fill" objectFit="contain" />
+                                        </div>
+                                    )}
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    field.onChange(reader.result as string);
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                    />
+                                </div>
                             </FormControl>
                             <FormDescription>URL for the wide banner image (landscape).</FormDescription>
                             <FormMessage />
