@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 
 const settingsFormSchema = z.object({
-  qrCodeUrl: z.string().url("Please enter a valid URL for the QR code image."),
+  qrCodeUrl: z.string().min(1, "Please upload an image for the QR code."),
 });
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
@@ -38,6 +38,8 @@ export default function AdminSettingsPage() {
       qrCodeUrl: "",
     },
   });
+
+  const watchedQrCodeUrl = form.watch('qrCodeUrl');
 
   useEffect(() => {
     if (paymentConfig) {
@@ -85,9 +87,22 @@ export default function AdminSettingsPage() {
                     name="qrCodeUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>QR Code Image URL</FormLabel>
+                        <FormLabel>QR Code Image</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com/qr-code.png" {...field} />
+                          <Input 
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                        field.onChange(reader.result as string);
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            }}
+                          />
                         </FormControl>
                         <FormDescription>
                           This image will be displayed to users for payment.
@@ -103,13 +118,12 @@ export default function AdminSettingsPage() {
               </Form>
             </div>
             <div className="flex items-center justify-center">
-                {isLoading && <Skeleton className="w-64 h-64" />}
-                {paymentConfig?.qrCodeUrl && (
+                {isLoading && !watchedQrCodeUrl && <Skeleton className="w-64 h-64" />}
+                {watchedQrCodeUrl ? (
                     <div className="relative w-64 h-64 rounded-lg overflow-hidden border">
-                         <Image src={paymentConfig.qrCodeUrl} alt="Payment QR Code" fill className="object-contain" />
+                         <Image src={watchedQrCodeUrl} alt="Payment QR Code Preview" fill className="object-contain" />
                     </div>
-                )}
-                 {!isLoading && !paymentConfig?.qrCodeUrl && (
+                ) : !isLoading && (
                     <div className="w-64 h-64 rounded-lg border flex items-center justify-center bg-muted text-muted-foreground">
                         <p>No QR Code set</p>
                     </div>
