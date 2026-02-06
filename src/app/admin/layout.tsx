@@ -26,7 +26,7 @@ import { GamerVerseLogo } from '@/components/icons';
 import { ADMIN_NAV_LINKS } from '@/lib/constants';
 import { Home, Gamepad2, ShoppingCart, Settings, ArrowLeft, Mail } from 'lucide-react';
 import { UserNav } from '@/components/auth/user-nav';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 const ICONS: { [key: string]: React.ElementType } = {
   Dashboard: Home,
