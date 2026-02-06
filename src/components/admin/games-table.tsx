@@ -35,6 +35,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 export function GamesTable() {
   const firestore = useFirestore();
@@ -65,18 +66,19 @@ export function GamesTable() {
   };
 
   return (
-    <>
-     <div className="flex items-center justify-between mb-6">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
         <div>
-            <h2 className="text-2xl font-bold tracking-tight">Games</h2>
-            <p className="text-muted-foreground">Manage the games in your store.</p>
+            <CardTitle>Games</CardTitle>
+            <CardDescription>Manage the games in your store.</CardDescription>
         </div>
-        <Button asChild>
+        <Button asChild size="sm">
           <Link href="/admin/games/new">
             <PlusCircle className="mr-2 h-4 w-4" /> Add Game
           </Link>
         </Button>
-      </div>
+      </CardHeader>
+      <CardContent>
       <div className='rounded-lg border'>
       <Table>
         <TableHeader>
@@ -146,7 +148,7 @@ export function GamesTable() {
                         <DropdownMenuItem>Edit</DropdownMenuItem>
                       </Link>
                       <AlertDialogTrigger asChild>
-                        <DropdownMenuItem className="text-red-500">
+                        <DropdownMenuItem className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
                           Delete
                         </DropdownMenuItem>
                       </AlertDialogTrigger>
@@ -177,6 +179,12 @@ export function GamesTable() {
         </TableBody>
       </Table>
       </div>
-    </>
+      {games && games.length === 0 && !isLoading && (
+        <div className="text-center p-8 text-muted-foreground">
+          No games found. Get started by adding a new game.
+        </div>
+      )}
+      </CardContent>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import React from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -13,10 +14,19 @@ import {
   SidebarMenuButton,
   SidebarInset,
 } from '@/components/ui/sidebar';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { GamerVerseLogo } from '@/components/icons';
 import { ADMIN_NAV_LINKS } from '@/lib/constants';
-import { Home, Gamepad2, ShoppingCart, Settings } from 'lucide-react';
+import { Home, Gamepad2, ShoppingCart, Settings, ArrowLeft } from 'lucide-react';
 import { UserNav } from '@/components/auth/user-nav';
+import { Button } from '../ui/button';
 
 const ICONS: { [key: string]: React.ElementType } = {
   Dashboard: Home,
@@ -24,6 +34,53 @@ const ICONS: { [key: string]: React.ElementType } = {
   Orders: ShoppingCart,
   Settings: Settings,
 };
+
+function AdminBreadcrumbs() {
+  const pathname = usePathname();
+  const pathParts = pathname.split('/').filter(part => part);
+
+  // Don't show breadcrumbs on the main admin dashboard
+  if (pathParts.length <= 1) {
+    return (
+        <h1 className="text-xl font-semibold">Dashboard</h1>
+    );
+  }
+
+  const breadcrumbs = pathParts.slice(1).map((part, index) => {
+    const href = '/admin/' + pathParts.slice(1, index + 2).join('/');
+    // Capitalize and decode URI component for display
+    const text = decodeURIComponent(part).split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const isLast = index === pathParts.length - 2;
+
+    return { href, text, isLast };
+  });
+
+  return (
+    <Breadcrumb className="hidden md:flex">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/admin">Dashboard</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        {breadcrumbs.map((crumb, index) => (
+          <React.Fragment key={crumb.href}>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              {crumb.isLast ? (
+                <BreadcrumbPage>{crumb.text}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <Link href={crumb.href}>{crumb.text}</Link>
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+          </React.Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -41,7 +98,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               return (
                 <SidebarMenuItem key={link.href}>
                   <SidebarMenuButton
-                    isActive={pathname.startsWith(link.href)}
+                    isActive={
+                      pathname === link.href ||
+                      (link.href !== '/admin' && pathname.startsWith(link.href))
+                    }
                     asChild
                   >
                     <Link href={link.href}>
@@ -56,14 +116,17 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-end gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:py-4">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur-sm sm:px-6">
           <SidebarTrigger className="sm:hidden" />
-          <div className='flex-1'>
-            <span className='font-semibold'>Admin Panel</span>
+          <AdminBreadcrumbs />
+          <div className="ml-auto flex items-center gap-2">
+             <Button variant="outline" size="sm" asChild>
+              <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Store</Link>
+            </Button>
+            <UserNav />
           </div>
-          <UserNav />
         </header>
-        <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
