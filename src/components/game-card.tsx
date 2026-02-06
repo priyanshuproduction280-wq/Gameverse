@@ -7,11 +7,14 @@ import { cn } from '@/lib/utils';
 import type { Game } from '@/lib/types';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingCart, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { GameRating } from './game-rating';
-import { WithId } from '@/firebase';
+import { WithId, useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { ToastAction } from './ui/toast';
+import { useRouter } from 'next/navigation';
+import { collection } from 'firebase/firestore';
 
 type GameCardProps = {
   game: WithId<Game>;
@@ -26,6 +29,10 @@ const cardVariants = {
 export function GameCard({ game, className }: GameCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const router = useRouter();
+
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,6 +44,70 @@ export function GameCard({ game, className }: GameCardProps) {
     })
   }
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Please log in',
+        description: 'You need to be logged in to add items to your cart.',
+        action: <ToastAction altText="Login" onClick={() => router.push('/login')}>Login</ToastAction>,
+      });
+      return;
+    }
+
+    if (!game || !firestore) return;
+
+    const cartCollectionRef = collection(firestore, 'users', user.uid, 'carts');
+    addDocumentNonBlocking(cartCollectionRef, {
+      gameId: game.id,
+      quantity: 1,
+      title: game.title,
+      price: game.price,
+      imageUrl: game.imageUrl,
+    });
+
+    toast({
+      title: 'Added to Cart',
+      description: `${game.title} has been added to your cart.`,
+      action: <ToastAction altText="View Cart" onClick={() => router.push('/cart')}>View Cart</ToastAction>,
+    });
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Please log in',
+        description: 'You need to be logged in to purchase.',
+        action: <ToastAction altText="Login" onClick={() => router.push('/login')}>Login</ToastAction>,
+      });
+      return;
+    }
+    
+    if (!game || !firestore) return;
+
+    const cartCollectionRef = collection(firestore, 'users', user.uid, 'carts');
+    addDocumentNonBlocking(cartCollectionRef, {
+      gameId: game.id,
+      quantity: 1,
+      title: game.title,
+      price: game.price,
+      imageUrl: game.imageUrl,
+    });
+
+    toast({
+      title: 'Added to Cart',
+      description: `Redirecting to checkout...`,
+    });
+    router.push('/checkout');
+  };
+
   return (
     <motion.div
       variants={cardVariants}
@@ -45,8 +116,8 @@ export function GameCard({ game, className }: GameCardProps) {
     >
       <div className="absolute -inset-0.5 bg-gradient-to-r from-accent to-primary rounded-lg blur-xl opacity-0 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
       
-      <Link href={`/games/${game.id}`} className="relative block h-full">
-        <div className="relative h-full overflow-hidden rounded-lg bg-card border border-white/10 shadow-lg hover:shadow-primary/20 transition-shadow duration-300 ease-in-out flex flex-col">
+      <div className="relative h-full overflow-hidden rounded-lg bg-card border border-white/10 shadow-lg hover:shadow-primary/20 transition-shadow duration-300 ease-in-out flex flex-col">
+        <Link href={`/games/${game.id}`} className="block">
             <motion.div
                 className="relative h-[300px] w-full"
                 whileHover={{ scale: 1.03 }}
@@ -65,37 +136,46 @@ export function GameCard({ game, className }: GameCardProps) {
                     <Heart className={cn("h-5 w-5 text-white transition-all", isWishlisted && "fill-destructive text-destructive")} />
                 </Button>
             </motion.div>
-
-            <div className="p-4 flex flex-col flex-grow">
+        </Link>
+        <div className="p-4 flex flex-col flex-grow">
+            <Link href={`/games/${game.id}`} className="block">
                 <h3 className="text-lg font-bold text-foreground truncate mb-1">
                     {game.title}
                 </h3>
                 {game.tags && game.tags.length > 0 && <p className="text-xs text-muted-foreground mb-2">{game.tags.join(', ')}</p>}
-                
-                <div className="mt-auto">
+            </Link>
+            
+            <div className="mt-auto">
+                <div className='flex items-center justify-between mb-4'>
+                    <p className="text-xl font-bold text-primary">
+                        {game.price > 0 ? `₹${game.price.toFixed(2)}` : 'Free'}
+                    </p>
                     {game.rating && game.rating > 0 && (
-                        <div className="my-3">
-                             <GameRating rating={game.rating} />
-                        </div>
+                        <GameRating rating={game.rating} showText={false} />
                     )}
-                   
-                    <div className="flex justify-between items-center">
-                        <p className="text-xl font-bold text-primary">
-                            {game.price > 0 ? `₹${game.price.toFixed(2)}` : 'Free'}
-                        </p>
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            className="bg-primary/10 text-primary hover:bg-primary/20"
-                            asChild
-                        >
-                           <span tabIndex={-1}>View</span>
-                        </Button>
-                    </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                        variant="default"
+                        size="sm"
+                        className="w-full"
+                        onClick={handleBuyNow}
+                    >
+                        <Zap className="mr-2 h-4 w-4" /> Buy
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full"
+                        onClick={handleAddToCart}
+                    >
+                       <ShoppingCart className="mr-2 h-4 w-4" /> Add to cart
+                    </Button>
                 </div>
             </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 }

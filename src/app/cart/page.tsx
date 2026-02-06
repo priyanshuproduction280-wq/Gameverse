@@ -1,17 +1,16 @@
 'use client';
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { Game } from "@/lib/types";
 import { collection } from "firebase/firestore";
-import { Info, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 
 type CartItem = {
     id: string;
@@ -101,14 +100,9 @@ export default function CartPage() {
                                     <span>Total</span>
                                     <span>₹{total.toFixed(2)}</span>
                                 </div>
-                                <Button className="w-full" disabled>Proceed to Checkout</Button>
-                                 <Alert>
-                                    <Info className="h-4 w-4" />
-                                    <AlertTitle>Checkout Unavailable</AlertTitle>
-                                    <AlertDescription>
-                                        The checkout and payment functionality is currently under construction.
-                                    </AlertDescription>
-                                </Alert>
+                                <Button className="w-full" asChild>
+                                    <Link href="/checkout">Proceed to Checkout</Link>
+                                </Button>
                             </CardContent>
                         </Card>
                     </div>
